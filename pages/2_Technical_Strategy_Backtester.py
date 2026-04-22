@@ -11,7 +11,6 @@ from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
 import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
@@ -78,9 +77,29 @@ def add_indicators(
     out = df.copy()
     out["ret"] = out["Close"].pct_change().fillna(0.0)
     for L in sorted(set(int(x) for x in sma_lens if int(x) > 0)):
-        out[f"SMA_{L}"] = ta.sma(out["Close"], length=L)
-    out[f"RSI_{rsi_len}"] = ta.rsi(out["Close"], length=rsi_len)
-    out[f"ATR_{atr_len}"] = ta.atr(out["High"], out["Low"], out["Close"], length=atr_len)
+        out[f"SMA_{L}"] = out["Close"].rolling(window=L, min_periods=L).mean()
+
+    # RSI (Wilder's smoothing)
+    delta = out["Close"].diff()
+    gain = delta.clip(lower=0.0)
+    loss = (-delta).clip(lower=0.0)
+    alpha = 1.0 / float(rsi_len)
+    avg_gain = gain.ewm(alpha=alpha, adjust=False, min_periods=rsi_len).mean()
+    avg_loss = loss.ewm(alpha=alpha, adjust=False, min_periods=rsi_len).mean()
+    rs = avg_gain / avg_loss.replace(0.0, np.nan)
+    out[f"RSI_{rsi_len}"] = 100.0 - (100.0 / (1.0 + rs))
+
+    # ATR (Wilder's smoothing)
+    prev_close = out["Close"].shift(1)
+    tr = pd.concat(
+        [
+            (out["High"] - out["Low"]).abs(),
+            (out["High"] - prev_close).abs(),
+            (out["Low"] - prev_close).abs(),
+        ],
+        axis=1,
+    ).max(axis=1)
+    out[f"ATR_{atr_len}"] = tr.ewm(alpha=1.0 / float(atr_len), adjust=False, min_periods=atr_len).mean()
     return out
 
 
@@ -472,7 +491,7 @@ def plot_price_signals(res: BacktestResult, mode: str) -> go.Figure:
 
 def main() -> None:
     st.title("Technical Strategy Backtester")
-    st.caption("Data: yfinance • Indicators: pandas_ta • Charts: plotly • For research/education only.")
+    st.caption("Data: yfinance • Indicators: pandas/numpy (no pandas-ta) • Charts: plotly • For research/education only.")
 
     # ---- Sidebar: Backtest + Optimizer controls (always visible) ----
     with st.sidebar:
