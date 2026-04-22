@@ -4,15 +4,8 @@ Quarterly financials: any ticker, live yfinance pull only.
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import pandas as pd
 import streamlit as st
-
-_ROOT = Path(__file__).resolve().parent.parent
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
 
 from pipeline import fetch_quarterly_metrics
 
