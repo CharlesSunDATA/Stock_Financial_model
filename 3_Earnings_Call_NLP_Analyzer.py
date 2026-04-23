@@ -452,6 +452,123 @@ def search_and_fetch_transcript(ticker: str, ua: str) -> tuple[str, str]:
     )
 
 
+_KOYFIN_TICKERS = "https://app.koyfin.com/api/v3/tickers"
+_KOYFIN_PUBHUB = "https://app.koyfin.com/api/v1/pubhub"
+_KOYFIN_HEADERS = {
+    "Accept": "application/json",
+    "Origin": "https://app.koyfin.com",
+    "Referer": "https://app.koyfin.com/",
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+    ),
+}
+
+
+@st.cache_data(show_spinner=False, ttl=60 * 60)
+def koyfin_search_ticker(ticker: str) -> str | None:
+    """Resolve ticker → Koyfin KID (e.g. 'NVDA' → 'eq-212q1o'). No auth needed."""
+    sym = ticker.strip().upper()
+    r = requests.post(
+        f"{_KOYFIN_TICKERS}/search",
+        json={"q": sym, "limit": 20},
+        headers=_KOYFIN_HEADERS,
+        timeout=15,
+    )
+    r.raise_for_status()
+    for item in (r.json().get("data") or []):
+        if item.get("ticker", "").upper() == sym and item.get("category") == "Equity":
+            return str(item["KID"])
+    return None
+
+
+@st.cache_data(show_spinner=False, ttl=60 * 15)
+def koyfin_transcript_list(kid: str) -> list[dict]:
+    """Fetch all transcript events for a KID. No auth needed."""
+    r = requests.get(
+        f"{_KOYFIN_PUBHUB}/transcript/list/{kid}",
+        headers=_KOYFIN_HEADERS,
+        timeout=15,
+    )
+    r.raise_for_status()
+    return r.json() or []
+
+
+def _koyfin_paragraphs_to_text(content: object) -> str:
+    """Recursively flatten the Koyfin transcript content tree into plain text."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "\n\n".join(_koyfin_paragraphs_to_text(c) for c in content if c)
+    if isinstance(content, dict):
+        # Common keys: 'text', 'body', 'paragraphs', 'content', 'sections'
+        for key in ("text", "body", "content", "paragraphs", "sections"):
+            val = content.get(key)
+            if val:
+                return _koyfin_paragraphs_to_text(val)
+        # Try all string values as last resort
+        parts = [str(v) for v in content.values() if isinstance(v, str) and len(v) > 20]
+        return "\n\n".join(parts)
+    return str(content) if content else ""
+
+
+@st.cache_data(show_spinner=False, ttl=60 * 30)
+def koyfin_fetch_transcript_content(event_id: str, auth_token: str) -> tuple[str, str]:
+    """
+    Fetch full transcript for a Koyfin event_id (keyDevId).
+    Requires an auth_token from your logged-in Koyfin session.
+
+    How to get your auth token:
+      1. Log in to app.koyfin.com in Chrome.
+      2. Press F12 → Application → Local Storage → https://app.koyfin.com
+      3. Find the key 'auth_token' and copy its value.
+    """
+    if not auth_token:
+        raise ValueError("auth_token is required for fetching transcript content from Koyfin.")
+
+    headers = {
+        **_KOYFIN_HEADERS,
+        "Authorization": f"Bearer {auth_token.strip()}",
+    }
+    r = requests.get(
+        f"{_KOYFIN_PUBHUB}/v2/transcript/{event_id}",
+        headers=headers,
+        timeout=30,
+    )
+    if r.status_code == 401:
+        raise ValueError(
+            "Koyfin returned 401 Unauthorized. Your auth token may be expired. "
+            "Log in again and copy a fresh token from DevTools → Application → "
+            "Local Storage → auth_token."
+        )
+    r.raise_for_status()
+    data = r.json()
+
+    # Extract title
+    header = data.get("header") or {}
+    title = str(header.get("title") or header.get("formattedTitle") or f"Koyfin transcript {event_id}")
+
+    # Extract body – try known keys
+    raw = None
+    for key in ("body", "content", "paragraphs", "sections", "transcript"):
+        raw = data.get(key)
+        if raw:
+            break
+    if raw is None:
+        # Dump everything except header
+        raw = {k: v for k, v in data.items() if k != "header"}
+
+    text = _koyfin_paragraphs_to_text(raw).strip()
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    if len(text) < 200:
+        raise ValueError(
+            f"Koyfin returned a very short transcript body ({len(text)} chars). "
+            "The content structure may have changed. "
+            "Try the 'Paste text' source instead."
+        )
+    return title.strip(), text
+
+
 @st.cache_data(show_spinner=False, ttl=60 * 30)
 def fetch_tikr_transcript(url: str, cookie: str) -> tuple[str, str]:
     """
@@ -677,6 +794,7 @@ def main() -> None:
                 "Paste text",
                 "Upload .txt",
                 "Auto-fetch by ticker",
+                "Koyfin (auth token)",
                 "TIKR (cookie login)",
                 "Auto-fetch (SEC EDGAR - best effort)",
             ],
@@ -706,6 +824,75 @@ def main() -> None:
             if "sec_text" in st.session_state:
                 transcript_text = str(st.session_state.get("sec_text", ""))
                 ticker_q = st.session_state.get("sec_label", ticker_q)
+                st.success(f"Loaded: {ticker_q}")
+                with st.expander("Preview fetched text", expanded=False):
+                    st.text(transcript_text[:20_000])
+        elif source == "Koyfin (auth token)":
+            st.caption("Fetch the latest earnings call transcript from Koyfin. Ticker lookup is free; full content requires your auth token.")
+            kf_ticker = st.text_input("Ticker symbol", value="NVDA", key="kf_ticker").strip().upper()
+            kf_token = st.text_input(
+                "Koyfin auth token",
+                value="",
+                type="password",
+                placeholder="Paste auth_token from DevTools",
+                help=(
+                    "Log in at app.koyfin.com → F12 → Application → Local Storage "
+                    "→ https://app.koyfin.com → auth_token"
+                ),
+            )
+            kf_event_type = st.selectbox(
+                "Event type",
+                ["Earnings Calls", "Shareholder/Analyst Calls", "Any"],
+                index=0,
+            )
+            with st.expander("How to get your Koyfin auth token", expanded=False):
+                st.markdown(
+                    """
+1. Log in to [app.koyfin.com](https://app.koyfin.com).
+2. Press **F12** to open DevTools.
+3. Go to **Application** tab → **Local Storage** → `https://app.koyfin.com`.
+4. Find the row with key **`auth_token`** and copy its value.
+
+The token is only sent to Koyfin's own API and is never stored.
+                    """
+                )
+            if st.button("Fetch latest transcript", type="primary", width="stretch", key="kf_fetch"):
+                with st.spinner(f"Fetching Koyfin transcript for {kf_ticker}…"):
+                    try:
+                        kid = koyfin_search_ticker(kf_ticker)
+                        if not kid:
+                            st.error(f"Ticker **{kf_ticker}** not found on Koyfin.")
+                        else:
+                            events = koyfin_transcript_list(kid)
+                            # Filter by event type
+                            if kf_event_type != "Any":
+                                filtered = [e for e in events if e.get("eventType") == kf_event_type]
+                            else:
+                                filtered = events
+                            if not filtered:
+                                st.warning(
+                                    f"No '{kf_event_type}' transcripts found for {kf_ticker}. "
+                                    f"Total events available: {len(events)}. "
+                                    f"Try changing the Event type filter."
+                                )
+                            else:
+                                latest = filtered[0]
+                                event_id = str(latest["keyDevId"])
+                                default_title = latest.get("transcriptTitle") or latest.get("formattedTitle") or f"{kf_ticker} transcript"
+                                if not kf_token:
+                                    st.info(
+                                        f"Found: **{default_title}** (event ID: {event_id})\n\n"
+                                        "Paste your **auth token** above and click again to fetch the full text."
+                                    )
+                                else:
+                                    label, txt = koyfin_fetch_transcript_content(event_id, kf_token)
+                                    st.session_state["kf_label"] = label
+                                    st.session_state["kf_text"] = txt
+                    except Exception as e:
+                        st.error(str(e))
+            if "kf_text" in st.session_state:
+                transcript_text = str(st.session_state.get("kf_text", ""))
+                ticker_q = st.session_state.get("kf_label", ticker_q)
                 st.success(f"Loaded: {ticker_q}")
                 with st.expander("Preview fetched text", expanded=False):
                     st.text(transcript_text[:20_000])
