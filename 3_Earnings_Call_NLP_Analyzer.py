@@ -513,23 +513,40 @@ def _koyfin_paragraphs_to_text(content: object) -> str:
 
 
 @st.cache_data(show_spinner=False, ttl=60 * 30)
-def koyfin_fetch_transcript_content(event_id: str, auth_token: str) -> tuple[str, str]:
+def koyfin_fetch_transcript_content(event_id: str, credential: str) -> tuple[str, str]:
     """
     Fetch full transcript for a Koyfin event_id (keyDevId).
-    Requires an auth_token from your logged-in Koyfin session.
 
-    How to get your auth token:
-      1. Log in to app.koyfin.com in Chrome.
-      2. Press F12 → Application → Local Storage → https://app.koyfin.com
-      3. Find the key 'auth_token' and copy its value.
+    `credential` can be either:
+      A) A Bearer token  – paste the value of the Authorization header from DevTools Network tab
+      B) A full Cookie string – paste the Cookie: header value from DevTools Network tab
+
+    How to get your credential (Network tab method – always works):
+      1. Log in to app.koyfin.com and open any transcript page.
+      2. Press F12 → Network tab → filter by 'pubhub'.
+      3. Click any request to api/v1/pubhub.
+      4. Under Request Headers, copy:
+           - 'Authorization: Bearer <token>'  → paste just the token part, OR
+           - 'Cookie: <value>'               → paste the entire cookie string.
     """
-    if not auth_token:
-        raise ValueError("auth_token is required for fetching transcript content from Koyfin.")
+    cred = (credential or "").strip()
+    if not cred:
+        raise ValueError(
+            "A credential is required. See the 'How to get your credential' guide below."
+        )
 
-    headers = {
-        **_KOYFIN_HEADERS,
-        "Authorization": f"Bearer {auth_token.strip()}",
-    }
+    # Decide if it looks like a bearer token or a cookie string
+    if cred.startswith("Bearer "):
+        cred = cred[len("Bearer "):]
+
+    # Heuristic: cookies contain '=' inside key=value pairs
+    is_cookie = "=" in cred and len(cred) > 40 and not cred.startswith("ey")
+
+    if is_cookie:
+        headers = {**_KOYFIN_HEADERS, "Cookie": cred}
+    else:
+        headers = {**_KOYFIN_HEADERS, "Authorization": f"Bearer {cred}"}
+
     r = requests.get(
         f"{_KOYFIN_PUBHUB}/v2/transcript/{event_id}",
         headers=headers,
@@ -537,25 +554,25 @@ def koyfin_fetch_transcript_content(event_id: str, auth_token: str) -> tuple[str
     )
     if r.status_code == 401:
         raise ValueError(
-            "Koyfin returned 401 Unauthorized. Your auth token may be expired. "
-            "Log in again and copy a fresh token from DevTools → Application → "
-            "Local Storage → auth_token."
+            "Koyfin returned 401 Unauthorized. Your credential may be expired or incomplete.\n\n"
+            "**How to get a fresh one:**\n"
+            "1. Log in to app.koyfin.com and open a transcript page.\n"
+            "2. F12 → **Network** tab → filter by `pubhub`.\n"
+            "3. Click any `/api/v1/pubhub` request → **Request Headers**.\n"
+            "4. Copy the **Authorization** header value (starts with `Bearer ey…`) and paste it here."
         )
     r.raise_for_status()
     data = r.json()
 
-    # Extract title
     header = data.get("header") or {}
     title = str(header.get("title") or header.get("formattedTitle") or f"Koyfin transcript {event_id}")
 
-    # Extract body – try known keys
     raw = None
     for key in ("body", "content", "paragraphs", "sections", "transcript"):
         raw = data.get(key)
         if raw:
             break
     if raw is None:
-        # Dump everything except header
         raw = {k: v for k, v in data.items() if k != "header"}
 
     text = _koyfin_paragraphs_to_text(raw).strip()
@@ -563,8 +580,7 @@ def koyfin_fetch_transcript_content(event_id: str, auth_token: str) -> tuple[str
     if len(text) < 200:
         raise ValueError(
             f"Koyfin returned a very short transcript body ({len(text)} chars). "
-            "The content structure may have changed. "
-            "Try the 'Paste text' source instead."
+            "The content structure may have changed. Try 'Paste text' instead."
         )
     return title.strip(), text
 
@@ -828,16 +844,16 @@ def main() -> None:
                 with st.expander("Preview fetched text", expanded=False):
                     st.text(transcript_text[:20_000])
         elif source == "Koyfin (auth token)":
-            st.caption("Fetch the latest earnings call transcript from Koyfin. Ticker lookup is free; full content requires your auth token.")
+            st.caption("Fetch the latest earnings call transcript from Koyfin. Ticker lookup is free; full content requires a credential from the Network tab.")
             kf_ticker = st.text_input("Ticker symbol", value="NVDA", key="kf_ticker").strip().upper()
             kf_token = st.text_input(
-                "Koyfin auth token",
+                "Koyfin credential (Bearer token or Cookie)",
                 value="",
                 type="password",
-                placeholder="Paste auth_token from DevTools",
+                placeholder="Bearer eyJ… or full Cookie: string",
                 help=(
-                    "Log in at app.koyfin.com → F12 → Application → Local Storage "
-                    "→ https://app.koyfin.com → auth_token"
+                    "F12 → Network tab → filter 'pubhub' → click any request "
+                    "→ Request Headers → copy Authorization or Cookie value."
                 ),
             )
             kf_event_type = st.selectbox(
@@ -845,15 +861,22 @@ def main() -> None:
                 ["Earnings Calls", "Shareholder/Analyst Calls", "Any"],
                 index=0,
             )
-            with st.expander("How to get your Koyfin auth token", expanded=False):
+            with st.expander("How to get your Koyfin credential", expanded=True):
                 st.markdown(
                     """
-1. Log in to [app.koyfin.com](https://app.koyfin.com).
-2. Press **F12** to open DevTools.
-3. Go to **Application** tab → **Local Storage** → `https://app.koyfin.com`.
-4. Find the row with key **`auth_token`** and copy its value.
+**Step-by-step (Network tab — always works):**
 
-The token is only sent to Koyfin's own API and is never stored.
+1. Log in to [app.koyfin.com](https://app.koyfin.com) and open any transcript page \
+(e.g. the URL you already have).
+2. Press **F12** → go to the **Network** tab.
+3. Type **`pubhub`** in the filter box to narrow results.
+4. Click any request that goes to `/api/v1/pubhub/…`.
+5. Scroll to **Request Headers** and copy **one** of:
+   - **`Authorization:`** `Bearer eyJ…` → paste just the `eyJ…` part, **or**
+   - **`Cookie:`** `…long string…` → paste the entire value.
+6. Paste it in the field above.
+
+Your credential is sent directly to Koyfin's API and is never stored elsewhere.
                     """
                 )
             if st.button("Fetch latest transcript", type="primary", width="stretch", key="kf_fetch"):
@@ -881,8 +904,8 @@ The token is only sent to Koyfin's own API and is never stored.
                                 default_title = latest.get("transcriptTitle") or latest.get("formattedTitle") or f"{kf_ticker} transcript"
                                 if not kf_token:
                                     st.info(
-                                        f"Found: **{default_title}** (event ID: {event_id})\n\n"
-                                        "Paste your **auth token** above and click again to fetch the full text."
+                                        f"Found: **{default_title}** (event ID: `{event_id}`)\n\n"
+                                        "Paste your **credential** (Bearer token or Cookie) above and click again to fetch the full text."
                                     )
                                 else:
                                     label, txt = koyfin_fetch_transcript_content(event_id, kf_token)
