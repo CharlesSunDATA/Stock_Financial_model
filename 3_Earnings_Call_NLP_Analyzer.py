@@ -8,6 +8,8 @@ Optional: OpenAI API for LLM summary.
 from __future__ import annotations
 
 import re
+import time
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from typing import Any
 
@@ -133,6 +135,76 @@ def llm_summary_openai(api_key: str, model: str, text: str) -> str:
     return resp.choices[0].message.content or ""
 
 
+def llm_summary_gemini(api_key: str, model: str, text: str) -> str:
+    """
+    Google Gemini summary via Generative Language API (HTTP), no extra deps.
+    """
+    api_key = (api_key or "").strip()
+    model = (model or "").strip() or "gemini-2.0-flash"
+    if not api_key:
+        raise ValueError("Google API key is required.")
+
+    prompt = (
+        "You are a senior Wall Street NLP analyst.\n"
+        "Given the following earnings call transcript, return:\n"
+        "1) Three business highlights (bullet list)\n"
+        "2) Three potential risks (bullet list)\n"
+        "Be concise and avoid hallucinating numbers. If info is missing, say so.\n\n"
+        "Return Markdown only.\n\n"
+        "Transcript:\n"
+        f"{text}"
+    )
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    payload = {
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.2},
+    }
+
+    # Retry on 429 / transient 5xx. Never include the API key in exceptions.
+    data: dict[str, Any] | None = None
+    for attempt in range(5):
+        try:
+            r = requests.post(
+                url,
+                headers={"x-goog-api-key": api_key},
+                json=payload,
+                timeout=90,
+            )
+            if r.status_code == 429 or (500 <= int(r.status_code) <= 599):
+                wait_s = min(16.0, 1.0 * (2**attempt))
+                time.sleep(wait_s)
+                continue
+            r.raise_for_status()
+            data = r.json()
+            break
+        except Exception as e:
+            if attempt < 4:
+                wait_s = min(16.0, 1.0 * (2**attempt))
+                time.sleep(wait_s)
+                continue
+            raise RuntimeError("Gemini request failed (rate limited or network error). Please try again shortly.") from e
+
+    if data is None:
+        raise RuntimeError("Gemini request failed (rate limited). Please try again shortly.")
+
+    cands = data.get("candidates") or []
+    if not cands:
+        return ""
+    content = (cands[0].get("content") or {}).get("parts") or []
+    out = "".join(str(p.get("text", "")) for p in content if isinstance(p, dict))
+    return out.strip()
+
+
+@st.cache_data(show_spinner=False, ttl=60 * 15)
+def cached_llm_summary(provider: str, api_key: str, model: str, text: str) -> str:
+    # Cache only on a short prefix so we don't store giant blobs in the cache key.
+    snippet = (text or "")[:20_000]
+    if provider.startswith("Google"):
+        return llm_summary_gemini(api_key, model, snippet)
+    return llm_summary_openai(api_key, model, snippet)
+
+
 def _strip_html(s: str) -> str:
     # minimal HTML → text (no extra deps)
     s = re.sub(r"(?is)<(script|style).*?>.*?</\\1>", " ", s)
@@ -249,11 +321,188 @@ def fetch_transcript_motley_fool_url(url: str, user_agent: str) -> tuple[str, st
     text = node.get_text("\n", strip=True)
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
     if len(text) < 1500:
-        raise ValueError("Parsed text too short (page may be paywalled or structure changed).")
+        raise ValueError(
+            "Seeking Alpha: parsed text too short. The page is likely paywalled, requires login, or blocks scraping. "
+            "Try copying the Q&A text into **Paste text** or upload a .txt instead."
+        )
 
     title = soup.title.get_text(strip=True) if soup.title else "Motley Fool transcript"
     label = re.sub(r"\s+", " ", title).strip()
     return label, text
+
+
+def _sa_fetch_by_article_id(art_id: str, ua: str) -> tuple[str, str] | None:
+    """Fetch transcript via Seeking Alpha internal API using article id."""
+    api_url = f"https://seekingalpha.com/api/v3/articles/{art_id}"
+    try:
+        rj = requests.get(
+            api_url,
+            headers={"User-Agent": ua, "Accept": "application/json"},
+            timeout=60,
+        )
+        if rj.status_code != 200:
+            return None
+        js = rj.json()
+        attrs = (js.get("data") or {}).get("attributes") or {}
+        title = str(attrs.get("title") or "Seeking Alpha transcript").strip()
+        html = str(attrs.get("content") or "")
+        if html and len(html) >= 200:
+            soup = BeautifulSoup(html, "html.parser")
+            text = soup.get_text("\n", strip=True)
+            text = re.sub(r"\n{3,}", "\n\n", text).strip()
+            if len(text) >= 400:
+                return re.sub(r"\s+", " ", title).strip(), text
+    except Exception:
+        pass
+    return None
+
+
+@st.cache_data(show_spinner=False, ttl=60 * 10)
+def _sa_rss_find_transcript_url(sym: str, ua: str) -> str | None:
+    """Scan the public Seeking Alpha transcripts RSS for the latest match for sym."""
+    try:
+        r = requests.get(
+            "https://seekingalpha.com/sector/transcripts.xml",
+            headers={"User-Agent": ua},
+            timeout=30,
+        )
+        r.raise_for_status()
+        root = ET.fromstring(r.text)
+        for it in root.findall("./channel/item"):
+            title = (it.findtext("title") or "").strip()
+            link = (it.findtext("link") or "").strip()
+            if not link:
+                continue
+            if re.search(rf"\({re.escape(sym)}\)", title) and "Transcript" in title:
+                return link
+    except Exception:
+        pass
+    return None
+
+
+@st.cache_data(show_spinner=False, ttl=60 * 10)
+def _motley_fool_search_transcript_url(sym: str, ua: str) -> str | None:
+    """Search Motley Fool for the latest earnings call transcript for sym."""
+    try:
+        search_url = f"https://www.fool.com/earnings/call-transcripts/?search={sym}"
+        r = requests.get(search_url, headers={"User-Agent": ua}, timeout=30)
+        if r.status_code != 200:
+            return None
+        soup = BeautifulSoup(r.text, "html.parser")
+        sym_lower = sym.lower()
+        for a in soup.find_all("a", href=True):
+            href = str(a["href"])
+            if "earnings-call-transcript" in href.lower() and sym_lower in href.lower():
+                if not href.startswith("http"):
+                    href = "https://www.fool.com" + href
+                return href
+        # Broader fallback: first transcript link on the page
+        for a in soup.find_all("a", href=True):
+            href = str(a["href"])
+            if "earnings-call-transcript" in href.lower():
+                if not href.startswith("http"):
+                    href = "https://www.fool.com" + href
+                return href
+    except Exception:
+        pass
+    return None
+
+
+@st.cache_data(show_spinner=False, ttl=60 * 15)
+def search_and_fetch_transcript(ticker: str, ua: str) -> tuple[str, str]:
+    """
+    Multi-source auto-fetch:
+      1. Seeking Alpha RSS → article API (no login needed, but only last ~20)
+      2. Motley Fool search page scrape
+    Raises ValueError with a clear message if nothing is found.
+    """
+    sym = (ticker or "").strip().upper()
+    if not sym:
+        raise ValueError("Please enter a ticker symbol.")
+
+    errors: list[str] = []
+
+    # ── Source 1: Seeking Alpha RSS ───────────────────────────────────────────
+    try:
+        sa_url = _sa_rss_find_transcript_url(sym, ua)
+        if sa_url:
+            # Extract article id from URL
+            m = re.search(r"/article/(\d+)", sa_url)
+            if m:
+                result = _sa_fetch_by_article_id(m.group(1), ua)
+                if result:
+                    return result
+    except Exception as e:
+        errors.append(f"Seeking Alpha: {e}")
+
+    # ── Source 2: Motley Fool ──────────────────────────────────────────────────
+    try:
+        mf_url = _motley_fool_search_transcript_url(sym, ua)
+        if mf_url:
+            label, txt = fetch_transcript_motley_fool_url(mf_url, ua)
+            return label, txt
+    except Exception as e:
+        errors.append(f"Motley Fool: {e}")
+
+    detail = "; ".join(errors) if errors else "ticker not found in recent RSS or Motley Fool search"
+    raise ValueError(
+        f"No recent earnings call transcript found for **{sym}**. "
+        f"({detail})\n\n"
+        "**Tip:** Use **Paste text** or **Upload .txt** to paste the transcript manually."
+    )
+
+
+HEDGE_WORDS = [
+    "maybe",
+    "might",
+    "could",
+    "possibly",
+    "perhaps",
+    "likely",
+    "unlikely",
+    "approximately",
+    "around",
+    "somewhat",
+    "kind of",
+    "sort of",
+    "we think",
+    "we believe",
+    "we expect",
+    "we hope",
+    "we plan",
+    "we aim",
+    "guidance",
+]
+CERTAINTY_WORDS = [
+    "will",
+    "definitely",
+    "certainly",
+    "clearly",
+    "confident",
+    "strong",
+    "committed",
+    "always",
+    "never",
+    "proven",
+    "guarantee",
+]
+
+
+def confidence_index(text: str) -> float:
+    """
+    Heuristic 0–100 confidence index from language.
+    Higher when certainty words outweigh hedge words.
+    """
+    t = (text or "").lower()
+    if not t.strip():
+        return float("nan")
+    hedge = sum(len(re.findall(r"\b" + re.escape(w) + r"\b", t)) for w in HEDGE_WORDS)
+    sure = sum(len(re.findall(r"\b" + re.escape(w) + r"\b", t)) for w in CERTAINTY_WORDS)
+    total = hedge + sure
+    if total == 0:
+        return 50.0
+    score = 50.0 + 50.0 * (sure - hedge) / float(total)
+    return float(max(0.0, min(100.0, score)))
 
 
 def main() -> None:
@@ -267,8 +516,13 @@ def main() -> None:
         st.header("Input")
         source = st.radio(
             "Transcript source",
-            ["Paste text", "Upload .txt", "Auto-fetch (SEC EDGAR - best effort)", "Auto-fetch (Motley Fool URL)"],
-            index=1,
+            [
+                "Paste text",
+                "Upload .txt",
+                "Auto-fetch by ticker",
+                "Auto-fetch (SEC EDGAR - best effort)",
+            ],
+            index=2,
         )
         ticker_q = st.text_input("Label (e.g., NVDA 2026 Q1)", value="NVDA 2026 Q1")
 
@@ -285,31 +539,35 @@ def main() -> None:
             sym = st.text_input("Ticker", value="NVDA").strip().upper()
             if st.button("Fetch latest (8-K)", type="primary", width="stretch"):
                 with st.spinner("Fetching from SEC EDGAR…"):
-                    label, txt = fetch_latest_transcript_sec_best_effort(sym, ua)
-                    st.session_state["sec_label"] = label
-                    st.session_state["sec_text"] = txt
+                    try:
+                        label, txt = fetch_latest_transcript_sec_best_effort(sym, ua)
+                        st.session_state["sec_label"] = label
+                        st.session_state["sec_text"] = txt
+                    except Exception as e:
+                        st.error(str(e))
             if "sec_text" in st.session_state:
                 transcript_text = str(st.session_state.get("sec_text", ""))
                 ticker_q = st.session_state.get("sec_label", ticker_q)
                 st.success(f"Loaded: {ticker_q}")
                 with st.expander("Preview fetched text", expanded=False):
                     st.text(transcript_text[:20_000])
-        else:
-            st.caption("Paste a Motley Fool transcript URL (HTML). Some pages may be restricted.")
-            mf_url = st.text_input(
-                "Motley Fool URL",
-                value="https://www.fool.com/earnings/call-transcripts/",
-                help="Open a specific transcript page and paste its URL here.",
+        elif source == "Auto-fetch by ticker":
+            st.caption(
+                "Enter a ticker to auto-fetch the latest earnings call transcript.\n\n"
+                "Sources tried in order: **Seeking Alpha** (public RSS) → **Motley Fool** (search)."
             )
-            ua = st.text_input("User-Agent", value="Mozilla/5.0")
-            if st.button("Fetch from URL", type="primary", width="stretch"):
-                with st.spinner("Fetching from Motley Fool…"):
-                    label, txt = fetch_transcript_motley_fool_url(mf_url, ua)
-                    st.session_state["mf_label"] = label
-                    st.session_state["mf_text"] = txt
-            if "mf_text" in st.session_state:
-                transcript_text = str(st.session_state.get("mf_text", ""))
-                ticker_q = st.session_state.get("mf_label", ticker_q)
+            at_ticker = st.text_input("Ticker symbol", value="NVDA", key="at_ticker").strip().upper()
+            if st.button("Fetch latest transcript", type="primary", width="stretch", key="at_fetch"):
+                with st.spinner(f"Searching for latest earnings call transcript for {at_ticker}…"):
+                    try:
+                        label, txt = search_and_fetch_transcript(at_ticker, "Mozilla/5.0")
+                        st.session_state["at_label"] = label
+                        st.session_state["at_text"] = txt
+                    except Exception as e:
+                        st.error(str(e))
+            if "at_text" in st.session_state:
+                transcript_text = str(st.session_state.get("at_text", ""))
+                ticker_q = st.session_state.get("at_label", ticker_q)
                 st.success(f"Loaded: {ticker_q}")
                 with st.expander("Preview fetched text", expanded=False):
                     st.text(transcript_text[:20_000])
@@ -322,26 +580,35 @@ def main() -> None:
 
         st.divider()
         st.subheader("LLM summary (optional)")
-        api_key = st.text_input("OpenAI API key", type="password")
-        model = st.text_input("Model", value="gpt-4.1-mini")
-        run_llm = st.checkbox("Generate AI summary", value=False, help="Requires OpenAI key")
+        provider = st.radio("Provider", ["Google (Gemini)", "OpenAI"], index=0, horizontal=True)
+        if provider.startswith("Google"):
+            api_key = st.text_input("Google API key", type="password")
+            model = st.text_input("Model", value="gemini-2.0-flash")
+            gen_click = st.button("Generate AI summary", type="primary", width="stretch", key="llm_go")
+        else:
+            api_key = st.text_input("OpenAI API key", type="password")
+            model = st.text_input("Model", value="gpt-4.1-mini")
+            gen_click = st.button("Generate AI summary", type="primary", width="stretch", key="llm_go")
 
     if not (transcript_text or "").strip():
         st.info("Provide a transcript via paste/upload, or auto-fetch one to begin.")
         return
 
     parts = split_prepared_vs_qa(transcript_text)
+    qa_focus = parts.qa.strip() if (parts.qa or "").strip() else parts.full_text.strip()
+    ci = confidence_index(qa_focus)
 
     growth_kw = [k.strip() for k in growth_in.split(",") if k.strip()]
     risk_kw = [k.strip() for k in risk_in.split(",") if k.strip()]
 
-    kw_growth = count_keywords(parts.full_text, growth_kw)
-    kw_risk = count_keywords(parts.full_text, risk_kw)
+    # Focus analysis on Q&A when available
+    kw_growth = count_keywords(qa_focus, growth_kw)
+    kw_risk = count_keywords(qa_focus, risk_kw)
     growth_total = int(sum(kw_growth.values()))
     risk_total = int(sum(kw_risk.values()))
 
     # Sentiment
-    s_full = sentence_split(parts.full_text)
+    s_full = sentence_split(qa_focus)
     s_pre = sentence_split(parts.prepared)
     s_qa = sentence_split(parts.qa)
 
@@ -356,7 +623,7 @@ def main() -> None:
     st.subheader("1) Sentiment dashboard")
     c1, c2, c3, c4, c5 = st.columns(5)
     with c1:
-        st.metric("Overall sentiment", f"{avg_full:.3f}" if np.isfinite(avg_full) else "—")
+        st.metric("Q&A sentiment", f"{avg_full:.3f}" if np.isfinite(avg_full) else "—")
     with c2:
         st.metric("Prepared sentiment", f"{avg_pre:.3f}" if np.isfinite(avg_pre) else "—")
     with c3:
@@ -365,6 +632,12 @@ def main() -> None:
         st.metric("Growth keywords", f"{growth_total:,}")
     with c5:
         st.metric("Risk keywords", f"{risk_total:,}")
+
+    st.caption(
+        f"**Confidence index (Q&A language):** {ci:.0f}/100"
+        if np.isfinite(ci)
+        else "**Confidence index (Q&A language):** —"
+    )
 
     st.caption(f"Label: **{ticker_q}** • Sentences: {len(df_full):,} • Prepared: {len(df_pre):,} • Q&A: {len(df_qa):,}")
 
@@ -406,16 +679,25 @@ def main() -> None:
             st.dataframe(show, use_container_width=True, hide_index=True)
 
     st.subheader("4) AI summary (optional)")
-    if run_llm and api_key.strip():
-        with st.spinner("Calling OpenAI…"):
-            try:
-                summary = llm_summary_openai(api_key.strip(), model.strip() or "gpt-4.1-mini", parts.full_text[:120_000])
-                st.markdown(summary if summary else "_No content returned._")
-            except Exception as e:
-                st.error("OpenAI call failed.")
-                st.exception(e)
+    if gen_click:
+        if not api_key.strip():
+            st.error("Please provide an API key first.")
+        else:
+            calling = "Calling Gemini…" if provider.startswith("Google") else "Calling OpenAI…"
+            with st.spinner(calling):
+                try:
+                    summary = cached_llm_summary(provider, api_key.strip(), model.strip(), parts.full_text)
+                    st.session_state["llm_summary_last"] = summary
+                    st.session_state["llm_summary_provider"] = provider
+                    st.session_state["llm_summary_model"] = model
+                except Exception as e:
+                    st.error(str(e))
+
+    last = st.session_state.get("llm_summary_last", "")
+    if last:
+        st.markdown(last)
     else:
-        st.info("Enable **Generate AI summary** and provide an OpenAI API key to see the AI section.")
+        st.info("Click **Generate AI summary** to run the LLM once (results are cached briefly to avoid rate limits).")
 
     with st.expander("Parsed sections (Prepared vs Q&A)", expanded=False):
         st.markdown("#### Prepared remarks")
