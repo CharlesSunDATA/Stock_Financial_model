@@ -452,6 +452,163 @@ def search_and_fetch_transcript(ticker: str, ua: str) -> tuple[str, str]:
     )
 
 
+@st.cache_data(show_spinner=False, ttl=60 * 30)
+def fetch_tikr_transcript(url: str, cookie: str) -> tuple[str, str]:
+    """
+    Fetch an earnings call transcript from TIKR using a browser session cookie.
+
+    TIKR is a Next.js SPA; logged-in pages embed all initial data in a
+    <script id="__NEXT_DATA__"> tag, which we parse directly – no JavaScript
+    execution required, as long as the cookie is valid.
+
+    How to get your cookie:
+      1. Log in to app.tikr.com in Chrome/Firefox.
+      2. Open DevTools (F12) → Network tab.
+      3. Reload the page, click any request to app.tikr.com, and copy the
+         full value of the "Cookie:" request header.
+      4. Paste that value into the Cookie field below.
+    """
+    import json as _json
+
+    url = (url or "").strip()
+    cookie = (cookie or "").strip()
+    if not url.startswith(("http://", "https://")):
+        raise ValueError("Please paste the full TIKR transcript URL.")
+    if not cookie:
+        raise ValueError(
+            "A session cookie is required. See instructions below the input field."
+        )
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+        ),
+        "Cookie": cookie,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://app.tikr.com/",
+    }
+
+    # ── 1. Try TIKR's internal transcript API (reverse-engineered) ─────────
+    from urllib.parse import urlparse, parse_qs
+    params = parse_qs(urlparse(url).query)
+    tid = (params.get("tid") or [""])[0]
+    cid = (params.get("cid") or [""])[0]
+
+    if tid:
+        for api_url in [
+            f"https://app.tikr.com/api/transcript?tid={tid}",
+            f"https://app.tikr.com/api/transcripts/{tid}",
+            f"https://api.tikr.com/transcript?tid={tid}&cid={cid}",
+        ]:
+            try:
+                rj = requests.get(
+                    api_url,
+                    headers={**headers, "Accept": "application/json"},
+                    timeout=30,
+                )
+                if rj.status_code == 200:
+                    data = rj.json()
+                    # Common shapes: {"transcript": "..."} or {"content": [...]} or {"body": "..."}
+                    raw = (
+                        data.get("transcript")
+                        or data.get("content")
+                        or data.get("body")
+                        or data.get("text")
+                    )
+                    if isinstance(raw, str) and len(raw) > 400:
+                        title = str(data.get("title") or data.get("name") or f"TIKR transcript (tid={tid})")
+                        return title.strip(), raw.strip()
+                    if isinstance(raw, list):
+                        # Array of sections/paragraphs
+                        pieces: list[str] = []
+                        for item in raw:
+                            if isinstance(item, str):
+                                pieces.append(item)
+                            elif isinstance(item, dict):
+                                pieces.append(
+                                    item.get("text") or item.get("content") or item.get("body") or ""
+                                )
+                        combined = "\n\n".join(p for p in pieces if p.strip())
+                        if len(combined) > 400:
+                            title = str(data.get("title") or f"TIKR transcript (tid={tid})")
+                            return title.strip(), combined.strip()
+            except Exception:
+                continue
+
+    # ── 2. Fetch the HTML page and extract __NEXT_DATA__ ───────────────────
+    r = requests.get(url, headers=headers, timeout=60)
+    if r.status_code in (401, 403):
+        raise ValueError(
+            "TIKR returned 'Unauthorized' – your cookie may have expired or be incomplete. "
+            "Please copy a fresh Cookie header from DevTools."
+        )
+    if r.status_code != 200:
+        raise ValueError(f"TIKR returned HTTP {r.status_code}. Check the URL and cookie.")
+
+    soup = BeautifulSoup(r.text, "html.parser")
+
+    # Check for login redirect (page title or redirect marker)
+    page_title = soup.title.get_text(strip=True) if soup.title else ""
+    if any(kw in page_title.lower() for kw in ("sign in", "login", "log in")):
+        raise ValueError(
+            "TIKR redirected to the login page – your cookie is expired or invalid. "
+            "Please copy a fresh Cookie header from DevTools after logging in."
+        )
+
+    # Parse __NEXT_DATA__
+    nd_tag = soup.find("script", {"id": "__NEXT_DATA__"})
+    if nd_tag and nd_tag.string:
+        try:
+            nd = _json.loads(nd_tag.string)
+            page_props = nd.get("props", {}).get("pageProps", {})
+            # Walk common key names used by TIKR
+            for key in ("transcript", "transcriptData", "data", "earningsCall"):
+                obj = page_props.get(key)
+                if not obj:
+                    continue
+                if isinstance(obj, str) and len(obj) > 400:
+                    label = page_title or f"TIKR transcript (tid={tid})"
+                    return label, re.sub(r"\n{3,}", "\n\n", obj).strip()
+                if isinstance(obj, dict):
+                    raw = (
+                        obj.get("body")
+                        or obj.get("content")
+                        or obj.get("text")
+                        or obj.get("transcript")
+                    )
+                    if isinstance(raw, str) and len(raw) > 400:
+                        label = str(obj.get("title") or page_title or f"TIKR transcript (tid={tid})")
+                        return label.strip(), re.sub(r"\n{3,}", "\n\n", raw).strip()
+                    if isinstance(raw, list):
+                        combined = "\n\n".join(
+                            (item if isinstance(item, str) else item.get("text") or item.get("content") or "")
+                            for item in raw
+                        )
+                        if len(combined) > 400:
+                            label = str(obj.get("title") or page_title or f"TIKR transcript (tid={tid})")
+                            return label.strip(), combined.strip()
+        except Exception:
+            pass
+
+    # ── 3. Last-resort: dump visible text from <main> / <article> ─────────
+    node = soup.find("main") or soup.find("article") or soup.body
+    if node:
+        text = node.get_text("\n", strip=True)
+        text = re.sub(r"\n{3,}", "\n\n", text).strip()
+        if len(text) > 800:
+            label = page_title or f"TIKR transcript (tid={tid or 'unknown'})"
+            return label.strip(), text
+
+    raise ValueError(
+        "Could not extract the transcript from the TIKR page. "
+        "The page may require JavaScript rendering beyond what static fetching supports. "
+        "As a workaround, open the transcript on TIKR, select all text (Ctrl+A), copy, "
+        "and use the **Paste text** source."
+    )
+
+
 HEDGE_WORDS = [
     "maybe",
     "might",
@@ -520,6 +677,7 @@ def main() -> None:
                 "Paste text",
                 "Upload .txt",
                 "Auto-fetch by ticker",
+                "TIKR (cookie login)",
                 "Auto-fetch (SEC EDGAR - best effort)",
             ],
             index=2,
@@ -548,6 +706,46 @@ def main() -> None:
             if "sec_text" in st.session_state:
                 transcript_text = str(st.session_state.get("sec_text", ""))
                 ticker_q = st.session_state.get("sec_label", ticker_q)
+                st.success(f"Loaded: {ticker_q}")
+                with st.expander("Preview fetched text", expanded=False):
+                    st.text(transcript_text[:20_000])
+        elif source == "TIKR (cookie login)":
+            st.caption("Fetch a specific transcript from TIKR using your account session.")
+            tikr_url = st.text_input(
+                "TIKR transcript URL",
+                value="",
+                placeholder="https://app.tikr.com/stock/transcript?cid=...&tid=...&e=...&ts=...",
+                help="Copy the URL from your TIKR browser tab.",
+            )
+            tikr_cookie = st.text_input(
+                "Session cookie",
+                value="",
+                type="password",
+                placeholder="Paste the full Cookie: header value from DevTools",
+            )
+            with st.expander("How to get your TIKR cookie", expanded=False):
+                st.markdown(
+                    """
+1. Log in to [app.tikr.com](https://app.tikr.com) and open the transcript page you want.
+2. Press **F12** (or right-click → Inspect) to open DevTools.
+3. Go to the **Network** tab, then reload the page.
+4. Click any request to `app.tikr.com`, scroll to **Request Headers**.
+5. Find the **Cookie:** line — copy its entire value and paste it above.
+
+Your cookie is only stored in this browser session and is never sent anywhere except to TIKR.
+                    """
+                )
+            if st.button("Fetch transcript", type="primary", width="stretch", key="tikr_fetch"):
+                with st.spinner("Fetching from TIKR…"):
+                    try:
+                        label, txt = fetch_tikr_transcript(tikr_url, tikr_cookie)
+                        st.session_state["tikr_label"] = label
+                        st.session_state["tikr_text"] = txt
+                    except Exception as e:
+                        st.error(str(e))
+            if "tikr_text" in st.session_state:
+                transcript_text = str(st.session_state.get("tikr_text", ""))
+                ticker_q = st.session_state.get("tikr_label", ticker_q)
                 st.success(f"Loaded: {ticker_q}")
                 with st.expander("Preview fetched text", expanded=False):
                     st.text(transcript_text[:20_000])
