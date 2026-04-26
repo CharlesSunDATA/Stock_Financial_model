@@ -1,9 +1,28 @@
-.DS_Store
+# Python
 __pycache__/
-*.pyc
-.venv/
-env/
-venv/
-.python-version
-.streamlit/secrets.toml
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
 
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables (never commit secrets)
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Streamlit secrets — never commit API keys
+.streamlit/secrets.toml
+secrets.toml
+
+# Editor
+.idea/
+.vscode/
+*.swp
