@@ -16,6 +16,7 @@ Pages:
 - Stock Risk Score (investment risk ranking)
 - Smart Money (insider purchases, buy/sell ratio, institutional 13-F ownership flows)
 - Portfolio Watchlist Dashboard (combined score, risk, momentum, targets, earnings)
+- Optical Communications Sector Tracker (leading indicators: hyperscaler capex, momentum)
 """
 
 from __future__ import annotations
@@ -60,6 +61,7 @@ pg = st.navigation(
         st.Page("pages/13_Risk_Score.py",         title="Risk Score",            icon="🛡️"),
         st.Page("pages/14_Smart_Money.py",        title="Smart Money",           icon="🏦"),
         st.Page("pages/15_Portfolio_Watchlist.py", title="Portfolio Watchlist",  icon="🧭"),
+        st.Page("pages/16_Optical_Comms.py",       title="Optical Communications", icon="💡"),
     ]
 )
 
