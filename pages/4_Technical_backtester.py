@@ -15,6 +15,8 @@ import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
 
+from utils.local_data import load_ohlcv as load_local_ohlcv
+
 TRADING_DAYS = 252
 
 
@@ -40,14 +42,16 @@ def _money(x: float) -> str:
 
 @st.cache_data(show_spinner=False, ttl=60 * 30)
 def load_ohlcv(ticker: str, start: date, end: date) -> pd.DataFrame:
-    df = yf.download(
-        ticker,
-        start=start.isoformat(),
-        end=(end + timedelta(days=1)).isoformat(),
-        auto_adjust=False,
-        progress=False,
-        threads=True,
-    )
+    df = load_local_ohlcv(ticker, start, end, min_rows=30)
+    if df is None or df.empty:
+        df = yf.download(
+            ticker,
+            start=start.isoformat(),
+            end=(end + timedelta(days=1)).isoformat(),
+            auto_adjust=False,
+            progress=False,
+            threads=True,
+        )
     if df is None or df.empty:
         return pd.DataFrame()
 
@@ -491,7 +495,7 @@ def plot_price_signals(res: BacktestResult, mode: str) -> go.Figure:
 
 def main() -> None:
     st.title("Technical Strategy Backtester")
-    st.caption("Data: yfinance • Indicators: pandas/numpy (no pandas-ta) • Charts: plotly • For research/education only.")
+    st.caption("Data: local SQLite first, yfinance fallback • Indicators: pandas/numpy (no pandas-ta) • Charts: plotly • For research/education only.")
 
     # ---- Sidebar: Backtest + Optimizer controls (always visible) ----
     with st.sidebar:
@@ -633,7 +637,7 @@ def main() -> None:
 
     raw: pd.DataFrame | None = None
     if run_bt or run_opt_req:
-        with st.spinner("Downloading data…"):
+        with st.spinner("Loading data…"):
             raw = load_ohlcv(ticker, start_d, end_d_in)
         if raw.empty or len(raw) < 250:
             st.error("Not enough data returned. Try a longer period or a different ticker.")
@@ -857,4 +861,3 @@ def main() -> None:
 
 
 main()
-

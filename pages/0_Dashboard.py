@@ -9,7 +9,7 @@ Sections:
   - US Treasury Yields (3M, 10Y, 30Y)
   - Global Markets (8 major world indices)
 
-Data: Yahoo Finance via yfinance (~15 min delayed).
+Data: local SQLite first, Yahoo Finance fallback when needed (~15 min delayed).
 Cache TTL: 60 s. Auto-refresh via streamlit-autorefresh (optional).
 """
 
@@ -21,6 +21,8 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 import yfinance as yf
+
+from utils.local_data import latest_quotes
 
 try:
     from zoneinfo import ZoneInfo          # Python 3.9+ built-in
@@ -99,7 +101,7 @@ ALL_SYMS: tuple[str, ...] = tuple(d["sym"] for d in _ALL_INST)
 @st.cache_data(ttl=60, show_spinner=False)
 def fetch_quotes(syms: tuple[str, ...]) -> dict[str, dict[str, Any]]:
     """
-    Download the last 5 trading-day daily bars for all symbols in one batch call.
+    Load latest quotes from local SQLite first, then Yahoo for missing symbols.
 
     Returns {sym: {"price": float | None, "change": float, "pct": float}}.
       - price  : latest close (today's partial session if market is open)
@@ -109,10 +111,18 @@ def fetch_quotes(syms: tuple[str, ...]) -> dict[str, dict[str, Any]]:
     """
     _blank: dict[str, Any] = {"price": None, "change": 0.0, "pct": 0.0}
     result: dict[str, dict[str, Any]] = {s: _blank.copy() for s in syms}
+    local = latest_quotes(list(syms))
+    for sym, quote in local.items():
+        if sym in result:
+            result[sym] = quote
+
+    missing = [s for s in syms if result[s]["price"] is None]
+    if not missing:
+        return result
 
     try:
         raw = yf.download(
-            list(syms),
+            missing,
             period="5d",
             interval="1d",
             auto_adjust=True,
@@ -130,12 +140,12 @@ def fetch_quotes(syms: tuple[str, ...]) -> dict[str, dict[str, Any]]:
         close: pd.DataFrame = (
             raw["Close"]
             if isinstance(raw.columns, pd.MultiIndex)
-            else raw[["Close"]].rename(columns={"Close": syms[0]})
+            else raw[["Close"]].rename(columns={"Close": missing[0]})
         )
     except Exception:
         return result
 
-    for sym in syms:
+    for sym in missing:
         try:
             if sym not in close.columns:
                 continue
@@ -199,20 +209,35 @@ def _fmt_countdown(delta: datetime.timedelta) -> str:
     total = max(0, int(delta.total_seconds()))
     h, rem = divmod(total, 3600)
     m, s   = divmod(rem, 60)
-    return f"{h:02d} : {m:02d} : {s:02d}"
+    # No spaces to avoid truncation on narrow cards
+    return f"{h:02d}:{m:02d}:{s:02d}"
 
 
-def _clock_card(label: str, value: str, sub: str, value_color: str = "#e2e8f0") -> str:
+def _clock_card(
+    label: str,
+    value: str,
+    sub: str,
+    value_color: str = "#e2e8f0",
+    *,
+    value_size: str = "1.25rem",
+    value_font: str = "monospace",
+    nowrap_value: bool = True,
+    value_overflow_hidden: bool = True,
+    value_ellipsis: bool = True,
+) -> str:
     """Return an HTML string for one compact clock card."""
+    ws = "nowrap" if nowrap_value else "normal"
+    ov = "hidden" if value_overflow_hidden else "visible"
+    te = "ellipsis" if value_ellipsis else "clip"
     return f"""
     <div style="background:rgba(255,255,255,0.05);border-radius:10px;
                 padding:12px 16px;min-width:0;overflow:hidden;">
       <div style="color:#94a3b8;font-size:0.72rem;
                   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
                   margin-bottom:4px;">{label}</div>
-      <div style="color:{value_color};font-size:1.25rem;font-weight:700;
-                  font-family:monospace;white-space:nowrap;overflow:hidden;
-                  text-overflow:ellipsis;">{value}</div>
+      <div style="color:{value_color};font-size:{value_size};font-weight:700;
+                  font-family:{value_font};white-space:{ws};overflow:{ov};
+                  text-overflow:{te};line-height:1.15;">{value}</div>
       <div style="color:#64748b;font-size:0.68rem;margin-top:3px;
                   white-space:nowrap;">{sub}</div>
     </div>"""
@@ -246,17 +271,43 @@ def _render_market_clock() -> None:
     else:
         s_color = "#eab308"
 
-    cards = "".join([
-        _clock_card("🇦🇺 Adelaide",   now_sa.strftime("%H:%M:%S"),       now_sa.strftime("%Z")),
-        _clock_card("🇺🇸 New York",   now_et.strftime("%H:%M:%S"),       now_et.strftime("%Z")),
-        _clock_card("NYSE Status",    status_label.replace("  ", " "),   status_note, value_color=s_color),
-        _clock_card(evt_title,        event_sa.strftime("%a %d %b %H:%M"), event_sa.strftime("%Z")),
-        _clock_card(cd_title,         _fmt_countdown(delta),             "hh : mm : ss"),
-    ])
+    # Merge "Next Open (Adelaide)" and "Opens in" into one countdown card:
+    # - value: HH : MM : SS
+    # - sub:   target event time (Adelaide)
+    countdown_value = _fmt_countdown(delta)
+    countdown_sub = f"{evt_title} · {event_sa.strftime('%a %d %b %H:%M')} {event_sa.strftime('%Z')}"
+
+    cards = "".join(
+        [
+            _clock_card("🇦🇺 Adelaide", now_sa.strftime("%H:%M:%S"), now_sa.strftime("%Z")),
+            _clock_card("🇺🇸 New York", now_et.strftime("%H:%M:%S"), now_et.strftime("%Z")),
+            # Status card: slightly smaller font and allow wrapping to avoid truncation (e.g. "Pre-Market")
+            _clock_card(
+                "NYSE Status",
+                status_label.replace("  ", " "),
+                status_note,
+                value_color=s_color,
+                value_size="1.02rem",
+                value_font="inherit",
+                nowrap_value=False,
+            ),
+            _clock_card(
+                cd_title,
+                countdown_value,
+                countdown_sub,
+                value_color="#e2e8f0",
+                value_size="1.18rem",
+                value_font="monospace",
+                nowrap_value=True,
+                value_overflow_hidden=False,
+                value_ellipsis=False,
+            ),
+        ]
+    )
 
     st.subheader("🕐  NYSE Market Clock  ·  Adelaide 🇦🇺 vs New York 🇺🇸")
     st.markdown(
-        f'<div style="display:grid;grid-template-columns:repeat(5,1fr);'
+        f'<div style="display:grid;grid-template-columns:repeat(4,1fr);'
         f'gap:10px;margin-bottom:0.5rem;">{cards}</div>',
         unsafe_allow_html=True,
     )
@@ -303,15 +354,16 @@ def _render_section(
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    # Auto-refresh every 60 s — always on, no user control needed.
+    # Auto-refresh every 1s so countdown is real-time.
+    # Market data is still protected by `@st.cache_data(ttl=60)`.
     if _HAS_AUTOREFRESH:
-        st_autorefresh(interval=60_000, key="mkt_autorefresh")
+        st_autorefresh(interval=1_000, key="mkt_autorefresh")
 
     # ── Header row ────────────────────────────────────────────────────────────
     st.title("📊 Market Overview")
     now = datetime.datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
     st.caption(
-        f"🕐 **{now}** (local)  ·  Quotes via Yahoo Finance — ~15 min delayed  "
+        f"🕐 **{now}** (local)  ·  Quotes: local DB first, Yahoo fallback — ~15 min delayed  "
         f"·  Cache refreshes every 60 s"
     )
 

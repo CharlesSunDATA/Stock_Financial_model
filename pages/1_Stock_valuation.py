@@ -7,12 +7,21 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass
+from datetime import date, timedelta
 from typing import Any
 
 import numpy as np
 import pandas as pd
 import streamlit as st
 import yfinance as yf
+
+from utils.local_data import (
+    connect_readonly,
+    default_db_path,
+    latest_company_snapshot,
+    load_adjusted_close,
+    table_exists,
+)
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -75,13 +84,33 @@ def _safe_float(x: Any, default: float | None = None) -> float | None:
         return default
 
 
-def fetch_ticker_info(ticker: str) -> tuple[dict[str, Any], Any]:
-    """Return (info dict, Ticker). Raises if fundamentals are unavailable."""
+@st.cache_data(ttl=60 * 60, show_spinner=False)
+def fetch_ticker_info(ticker: str) -> dict[str, Any]:
+    """Cached local snapshot first, yfinance info only when local data is insufficient."""
+    info = latest_company_snapshot(ticker)
+    if info.get("currentPrice") is not None or info.get("marketCap") is not None:
+        return info
     t = yf.Ticker(ticker)
     info = t.info
     if not info:
         raise ValueError(f"Could not load fundamentals for {ticker} (empty info).")
-    return info, t
+    return info
+
+
+@st.cache_data(ttl=60 * 30, show_spinner=False)
+def fetch_recent_close(ticker: str) -> float | None:
+    """Cached recent close from local prices first, then Yahoo when missing."""
+    quote = latest_company_snapshot(ticker)
+    px = _safe_float(quote.get("currentPrice"))
+    if px is not None:
+        return px
+    try:
+        hist = yf.Ticker(ticker).history(period="5d", auto_adjust=True)
+        if hist is None or hist.empty:
+            return None
+        return float(hist["Close"].iloc[-1])
+    except Exception:
+        return None
 
 
 def compute_peer_average_pe(ticker: str, info: dict[str, Any]) -> tuple[float | None, tuple[str, ...]]:
@@ -101,15 +130,26 @@ def compute_peer_average_pe(ticker: str, info: dict[str, Any]) -> tuple[float | 
 
     pes: list[float] = []
     used: list[str] = []
-    for sym in peers:
+
+    @st.cache_data(ttl=60 * 60, show_spinner=False)
+    def _peer_trailing_pe(sym: str) -> float | None:
+        try:
+            inf = yf.Ticker(sym).info
+            pe = _safe_float(inf.get("trailingPE"))
+            if pe is not None and 0 < pe < 800:
+                return float(pe)
+        except Exception:
+            return None
+        return None
+
+    # Limit peer requests to reduce rate-limit risk
+    for sym in peers[:4]:
         if sym.upper() == t_up:
             continue
         try:
-            inf = yf.Ticker(sym).info
-            pe = inf.get("trailingPE")
-            pe = _safe_float(pe)
-            if pe is not None and 0 < pe < 800:
-                pes.append(pe)
+            pe = _peer_trailing_pe(sym.upper())
+            if pe is not None:
+                pes.append(float(pe))
                 used.append(sym.upper())
         except Exception:
             continue
@@ -208,12 +248,144 @@ def _ttm_points_from_quarterly(eps_q: pd.Series) -> pd.Series:
 
 
 def _price_monthly(t: yf.Ticker, years: int) -> pd.Series | None:
+    ticker = getattr(t, "ticker", "")
+    if ticker:
+        end = date.today()
+        start = end - timedelta(days=int(years * 366 + 45))
+        local = load_adjusted_close([str(ticker).upper()], start, end, min_rows=6)
+        sym = str(ticker).upper()
+        if sym in local.columns:
+            close_m = local[sym].dropna().resample("ME").last().dropna()
+            close_m.index = pd.DatetimeIndex(pd.to_datetime(close_m.index)).tz_localize(None)
+            if not close_m.empty:
+                return close_m
+
     hist = t.history(period=f"{years}y", interval="1mo", auto_adjust=True)
     if hist is None or hist.empty:
         return None
     close_m = hist["Close"].copy()
     close_m.index = pd.DatetimeIndex(pd.to_datetime(close_m.index)).tz_localize(None)
     return close_m
+
+
+def _quarterly_row_series(t: yf.Ticker, stmt_attrs: tuple[str, ...], row_names: tuple[str, ...]) -> pd.Series | None:
+    """Return quarterly series for the first matching row across statement attrs."""
+    q = None
+    for attr in stmt_attrs:
+        try:
+            cand = getattr(t, attr, None)
+            if cand is not None and not cand.empty:
+                q = cand
+                break
+        except Exception:
+            continue
+    if q is None or q.empty:
+        return None
+
+    for name in row_names:
+        if name not in q.index:
+            continue
+        s = pd.to_numeric(q.loc[name], errors="coerce").dropna()
+        if s.empty:
+            continue
+        dti = pd.to_datetime(s.index)
+        s.index = pd.DatetimeIndex(dti).tz_localize(None)
+        return s.sort_index()
+    return None
+
+
+def _ttm_points_from_quarterly_amounts(q: pd.Series) -> pd.Series:
+    """
+    TTM series for non-per-share amounts (e.g., revenue, capex).
+    Uses full 4Q sum when possible; otherwise annualizes partial sums (1Q–3Q).
+    """
+    q = q.sort_index()
+    cols = list(q.index)
+    idx: list[pd.Timestamp] = []
+    val: list[float] = []
+    for j in range(len(cols)):
+        if j >= 3:
+            ttm = float(q.iloc[j - 3 : j + 1].sum())
+        elif j == 2:
+            ttm = float(q.iloc[0:3].sum()) * (4.0 / 3.0)
+        elif j == 1:
+            ttm = float(q.iloc[0:2].sum()) * 2.0
+        else:
+            ttm = float(q.iloc[0]) * 4.0
+        idx.append(pd.Timestamp(cols[j]))
+        val.append(ttm)
+    return pd.Series(val, index=pd.DatetimeIndex(idx)).sort_index()
+
+
+def build_monthly_ps_and_capex_history(ticker: str, years: int = 5) -> pd.DataFrame | None:
+    """
+    Monthly history of:
+    - P/S (Price-to-Sales) using monthly price * shares / Revenue(TTM)
+    - CapEx-to-Revenue ratio using |CapEx(TTM)| / Revenue(TTM)
+
+    Shares are treated as constant using info.sharesOutstanding (best-effort).
+    """
+    t = yf.Ticker(ticker)
+    close_m = _price_monthly(t, years)
+    if close_m is None or close_m.empty:
+        return None
+
+    rev_q = _quarterly_row_series(
+        t,
+        stmt_attrs=("quarterly_income_stmt", "quarterly_financials"),
+        row_names=("Total Revenue", "Operating Revenue", "TotalRevenue"),
+    )
+    capex_q = _quarterly_row_series(
+        t,
+        stmt_attrs=("quarterly_cashflow", "quarterly_cash_flow"),
+        row_names=("Capital Expenditure", "Capital Expenditures"),
+    )
+    if rev_q is None or rev_q.empty:
+        return None
+
+    rev_ttm = _ttm_points_from_quarterly_amounts(rev_q)
+    capex_ttm = _ttm_points_from_quarterly_amounts(capex_q) if capex_q is not None and not capex_q.empty else None
+
+    shares = _safe_float(t.info.get("sharesOutstanding"))
+    if shares is None or shares <= 0:
+        shares = None
+
+    rows: list[dict[str, Any]] = []
+    for dt, px in close_m.items():
+        dt_ts = pd.Timestamp(dt)
+        rev = rev_ttm.asof(dt_ts)
+        if rev is None or (isinstance(rev, float) and np.isnan(rev)) or float(rev) <= 0:
+            continue
+        pxf = float(px)
+        if pxf <= 0:
+            continue
+
+        ps = None
+        if shares is not None:
+            ps = (pxf * float(shares)) / float(rev)
+
+        capex_rev = None
+        if capex_ttm is not None and not capex_ttm.empty:
+            cx = capex_ttm.asof(dt_ts)
+            if cx is not None and not (isinstance(cx, float) and np.isnan(cx)):
+                capex_rev = abs(float(cx)) / float(rev) if float(rev) != 0 else None
+
+        rows.append(
+            {
+                "date": dt_ts,
+                "close": pxf,
+                "rev_ttm": float(rev),
+                "ps": None if ps is None or not np.isfinite(ps) else float(ps),
+                "capex_rev": None if capex_rev is None or not np.isfinite(capex_rev) else float(capex_rev),
+            }
+        )
+
+    if len(rows) < 6:
+        return None
+    out = pd.DataFrame(rows).sort_values("date").reset_index(drop=True)
+    out.attrs["ps_basis"] = "Price (monthly) × shares / Revenue(TTM from quarterly statements)"
+    out.attrs["capex_basis"] = "|CapEx(TTM)| / Revenue(TTM) (quarterly cash flow + income stmt)"
+    return out
 
 
 def _pe_from_eps_series(close_m: pd.Series, eps_s: pd.Series, min_periods: int) -> pd.DataFrame | None:
@@ -267,6 +439,11 @@ def build_monthly_pe_history(ticker: str, years: int = 5) -> pd.DataFrame | None
             return out
 
     return None
+
+
+# Cache the expensive historical multiple builders (Yahoo rate-limit friendly)
+build_monthly_pe_history = st.cache_data(ttl=60 * 60, show_spinner=False)(build_monthly_pe_history)
+build_monthly_ps_and_capex_history = st.cache_data(ttl=60 * 60, show_spinner=False)(build_monthly_ps_and_capex_history)
 
 
 def pe_zone_gauge(
@@ -430,6 +607,118 @@ def pe_zone_fallback_text(
     )
 
 
+def _zone_bar(
+    title: str,
+    subtitle: str,
+    current: float | None,
+    hist: pd.Series,
+    fmt: str,
+    suffix: str = "",
+):
+    """Generic horizontal percentile zone bar (P25–P75) for a series."""
+    import plotly.graph_objects as go  # noqa: PLC0415
+
+    s = hist.astype(float).replace([np.inf, -np.inf], np.nan).dropna()
+    if current is None or not np.isfinite(current) or current <= 0 or len(s) < 6:
+        return None
+
+    q25, q50, q75 = (float(x) for x in np.percentile(s, [25, 50, 75]))
+    cur = float(current)
+
+    if cur < q25:
+        zone_label, zone_color = "Low ✅", "#2ecc71"
+    elif cur < q75:
+        zone_label, zone_color = "Mid 🟡", "#f1c40f"
+    else:
+        zone_label, zone_color = "High ⚠️", "#e74c3c"
+
+    x_min = max(0.0, float(s.min())) * 0.90
+    x_max = max(float(s.max()), q75) * 1.35
+    bar_y0, bar_y1 = 0.30, 0.70
+
+    fig = go.Figure()
+    # zones
+    for x0, x1, fill, border in [
+        (x_min, q25, "rgba(46,204,113,0.55)", "#2ecc71"),
+        (q25, q75, "rgba(241,196,15,0.45)", "#f1c40f"),
+        (q75, x_max, "rgba(231,76,60,0.50)", "#e74c3c"),
+    ]:
+        fig.add_shape(
+            type="rect",
+            x0=x0,
+            x1=x1,
+            y0=bar_y0,
+            y1=bar_y1,
+            fillcolor=fill,
+            line=dict(color=border, width=1),
+            layer="below",
+        )
+
+    # current marker
+    fig.add_shape(type="line", x0=cur, x1=cur, y0=bar_y0, y1=bar_y1, line=dict(color="#3498db", width=3))
+    fig.add_trace(
+        go.Scatter(
+            x=[cur],
+            y=[bar_y1 + 0.22],
+            mode="markers+text",
+            marker=dict(symbol="diamond", size=12, color="#3498db", line=dict(color="white", width=1.5)),
+            text=[f"<b>{format(cur, fmt)}{suffix}</b>"],
+            textposition="middle right",
+            textfont=dict(size=13, color="#3498db"),
+            hovertemplate=f"Current: {format(cur, fmt)}{suffix}<extra></extra>",
+            showlegend=False,
+        )
+    )
+
+    # zone labels
+    fig.add_annotation(
+        x=(x_min + q25) / 2,
+        y=bar_y0 - 0.04,
+        text=f"Below P25<br><b>{format(q25, fmt)}{suffix}</b>",
+        showarrow=False,
+        font=dict(size=11, color="#2ecc71"),
+        yanchor="top",
+    )
+    fig.add_annotation(
+        x=(q25 + q75) / 2,
+        y=bar_y0 - 0.04,
+        text=f"P25–P75<br><b>{format(q25, fmt)}–{format(q75, fmt)}{suffix}</b>",
+        showarrow=False,
+        font=dict(size=11, color="#f1c40f"),
+        yanchor="top",
+        xanchor="center",
+    )
+    fig.add_annotation(
+        x=(q75 + x_max) / 2,
+        y=bar_y0 - 0.04,
+        text=f"Above P75<br><b>{format(q75, fmt)}{suffix}</b>",
+        showarrow=False,
+        font=dict(size=11, color="#e74c3c"),
+        yanchor="top",
+        xanchor="center",
+    )
+
+    fig.update_layout(
+        title=dict(
+            text=(
+                f"<b>{title}: <span style='color:{zone_color}'>{format(cur, fmt)}{suffix} — {zone_label}</span></b><br>"
+                f"<span style='font-size:11px;color:#aaa'>{subtitle}</span>"
+            ),
+            font=dict(size=14, color="white"),
+            x=0,
+            xanchor="left",
+        ),
+        xaxis=dict(range=[x_min, x_max], showgrid=False, zeroline=False, tickfont=dict(size=11, color="#ccc")),
+        yaxis=dict(range=[0, 1], showgrid=False, zeroline=False, showticklabels=False),
+        height=220,
+        margin=dict(t=65, b=10, l=10, r=10),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="white"),
+    )
+    return fig
+
+
 def _latest_annual_value(cf: pd.DataFrame, row_names: tuple[str, ...]) -> float | None:
     """Latest annual value from cash flow statement (iterate columns for first non-null)."""
     if cf is None or cf.empty:
@@ -463,6 +752,10 @@ def build_fundamental_inputs(t: yf.Ticker, info: dict[str, Any]) -> FundamentalI
     FCF = Operating cash flow + Capital expenditure (CapEx is usually negative).
     Shares and net debt: prefer info, else balance sheet.
     """
+    local = _local_fundamental_inputs(str(getattr(t, "ticker", "") or ""))
+    if local is not None:
+        return local
+
     used_defaults: list[str] = []
     cf = None
     bs = None
@@ -543,6 +836,64 @@ def build_fundamental_inputs(t: yf.Ticker, info: dict[str, Any]) -> FundamentalI
     )
 
 
+def _local_fundamental_inputs(ticker: str) -> FundamentalInputs | None:
+    sym = ticker.strip().upper()
+    db = default_db_path()
+    if not sym or not db.exists():
+        return None
+    try:
+        with connect_readonly(db) as conn:
+            if not (
+                table_exists(conn, "cash_flow_statement")
+                and table_exists(conn, "balance_sheet")
+            ):
+                return None
+            cf = conn.execute(
+                """
+                SELECT operating_cash_flow, capital_expenditure, free_cash_flow
+                FROM cash_flow_statement
+                WHERE ticker = ?
+                ORDER BY report_date DESC
+                LIMIT 1
+                """,
+                (sym,),
+            ).fetchone()
+            bs = conn.execute(
+                """
+                SELECT cash_and_equivalents, outstanding_shares, total_debt
+                FROM balance_sheet
+                WHERE ticker = ?
+                ORDER BY report_date DESC
+                LIMIT 1
+                """,
+                (sym,),
+            ).fetchone()
+    except Exception:
+        return None
+    if not cf:
+        return None
+    fcf = _safe_float(cf[2])
+    if fcf is None:
+        ocf = _safe_float(cf[0], 0.0) or 0.0
+        capex = _safe_float(cf[1], 0.0) or 0.0
+        fcf = ocf + capex
+    if fcf is None:
+        return None
+    cash = _safe_float(bs[0], 0.0) if bs else 0.0
+    shares = _safe_float(bs[1]) if bs else None
+    debt = _safe_float(bs[2], 0.0) if bs else 0.0
+    notes: list[str] = ["Fundamental inputs loaded from local SQLite"]
+    if shares is None or shares <= 0:
+        notes.append("Local shares outstanding missing; denominator set to 1")
+        shares = 1.0
+    return FundamentalInputs(
+        fcf_base=float(fcf),
+        shares=max(float(shares), 1e-12),
+        net_debt=float(debt or 0.0) - float(cash or 0.0),
+        used_defaults=notes,
+    )
+
+
 def run_two_stage_dcf(
     fcf0: float,
     growth_5y: float,
@@ -601,7 +952,7 @@ def classify_valuation(price: float | None, low: float, high: float) -> str:
 
 def main() -> None:
     st.title("Stock Valuation Dashboard")
-    st.caption("Data: yfinance — simplified two-stage DCF for education/research only, not investment advice.")
+    st.caption("Data: local SQLite first, yfinance fallback — simplified two-stage DCF for education/research only, not investment advice.")
 
     with st.sidebar:
         st.header("Ticker & DCF inputs")
@@ -611,9 +962,12 @@ def main() -> None:
         wacc = st.slider("Discount rate WACC (%)", 5, 20, 10, format="%d%%") / 100.0
 
     try:
-        info, t = fetch_ticker_info(ticker)
-        hist = t.history(period="5d")
-        close_px = float(hist["Close"].iloc[-1]) if hist is not None and not hist.empty else None
+        info = fetch_ticker_info(ticker)
+        t = yf.Ticker(ticker)  # keep a live ticker object for statements
+        close_px = None
+        # Only fall back to history when info lacks a usable price
+        if not (info.get("currentPrice") or info.get("regularMarketPrice")):
+            close_px = fetch_recent_close(ticker)
         market = build_market_data(ticker, info, close_px)
         fundamentals = build_fundamental_inputs(t, info)
     except Exception as e:
@@ -678,6 +1032,55 @@ def main() -> None:
         "Bands use monthly P/E distribution; Yahoo trailing P/E as current value. "
         "For education only; not investment advice."
     )
+
+    st.markdown("##### CapEx-to-Revenue ratio & P/S — historical percentiles (~5y monthly)")
+    try:
+        ps_df = build_monthly_ps_and_capex_history(ticker, years=_lookback_y)
+    except Exception:
+        ps_df = None
+
+    cur_ps = _safe_float(info.get("priceToSalesTrailing12Months"))
+    cur_capex_rev = None
+    if ps_df is not None and not ps_df.empty:
+        # Use latest computed values when available
+        if cur_ps is None and "ps" in ps_df.columns:
+            last_ps = ps_df["ps"].dropna()
+            cur_ps = float(last_ps.iloc[-1]) if not last_ps.empty else None
+        if "capex_rev" in ps_df.columns:
+            last_cx = ps_df["capex_rev"].dropna()
+            cur_capex_rev = float(last_cx.iloc[-1]) if not last_cx.empty else None
+
+    if ps_df is None or ps_df.empty:
+        st.info("Not enough quarterly revenue / cashflow data to build P/S and CapEx/Revenue history.")
+    else:
+        a1, a2 = st.columns(2)
+        with a1:
+            fig_ps = _zone_bar(
+                title=f"{ticker.upper()}  Price-to-Sales (P/S)",
+                subtitle=ps_df.attrs.get("ps_basis", "~5y monthly"),
+                current=cur_ps,
+                hist=ps_df["ps"].dropna(),
+                fmt=".2f",
+                suffix="x",
+            )
+            if fig_ps is not None:
+                st.plotly_chart(fig_ps, use_container_width=True)
+            else:
+                st.info("P/S: insufficient data to compute stable percentiles.")
+
+        with a2:
+            fig_cx = _zone_bar(
+                title=f"{ticker.upper()}  CapEx / Revenue",
+                subtitle=ps_df.attrs.get("capex_basis", "~5y monthly"),
+                current=cur_capex_rev,
+                hist=ps_df["capex_rev"].dropna(),
+                fmt=".1%",
+                suffix="",
+            )
+            if fig_cx is not None:
+                st.plotly_chart(fig_cx, use_container_width=True)
+            else:
+                st.info("CapEx/Revenue: insufficient data to compute stable percentiles.")
 
     if fundamentals.used_defaults:
         with st.expander("Data gaps (defaults or substitutes applied)", expanded=False):
@@ -860,4 +1263,3 @@ def main() -> None:
 
 
 main()
-

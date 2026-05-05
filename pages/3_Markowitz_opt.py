@@ -16,6 +16,8 @@ import streamlit as st
 import yfinance as yf
 from scipy.optimize import Bounds, LinearConstraint, minimize
 
+from utils.local_data import latest_quotes, load_adjusted_close
+
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 TRADING_DAYS = 252
@@ -80,26 +82,32 @@ def fetch_adj_close(
 ) -> pd.DataFrame:
     if not tickers:
         raise ValueError("At least one ticker is required.")
-    data = yf.download(
-        tickers,
-        start=start.isoformat(),
-        end=(end + timedelta(days=1)).isoformat(),
-        auto_adjust=True,
-        progress=False,
-        threads=True,
-    )
-    if data.empty:
-        raise ValueError("No price data returned. Check tickers and date range.")
+    prices = load_adjusted_close(tickers, start, end, min_rows=30)
+    missing = [t for t in tickers if t.upper() not in prices.columns]
 
-    if isinstance(data.columns, pd.MultiIndex):
-        if "Close" in data.columns.get_level_values(0):
-            prices = data["Close"].copy()
-        else:
-            prices = data.xs("Close", axis=1, level=0, drop_level=True)
-    else:
-        prices = data[["Close"]].copy() if "Close" in data.columns else data.copy()
-        if len(tickers) == 1:
-            prices.columns = [tickers[0]]
+    if missing:
+        data = yf.download(
+            missing,
+            start=start.isoformat(),
+            end=(end + timedelta(days=1)).isoformat(),
+            auto_adjust=True,
+            progress=False,
+            threads=True,
+        )
+        if not data.empty:
+            if isinstance(data.columns, pd.MultiIndex):
+                if "Close" in data.columns.get_level_values(0):
+                    y_prices = data["Close"].copy()
+                else:
+                    y_prices = data.xs("Close", axis=1, level=0, drop_level=True)
+            else:
+                y_prices = data[["Close"]].copy() if "Close" in data.columns else data.copy()
+                if len(missing) == 1:
+                    y_prices.columns = [missing[0]]
+            prices = prices.join(y_prices, how="outer") if not prices.empty else y_prices
+
+    if prices.empty:
+        raise ValueError("No price data returned. Check tickers and date range.")
 
     prices = prices.dropna(how="all").ffill().dropna()
     if prices.empty or len(prices) < 30:
@@ -268,21 +276,22 @@ def monte_carlo_portfolios(
 ) -> pd.DataFrame:
     n = len(mu)
     W = _sample_capped_simplex_weights(n, rng, n_sims)
-    rows: list[dict] = []
-    for i in range(n_sims):
-        w = W[i]
-        ret = portfolio_return(w, mu)
-        vol = portfolio_volatility(w, cov)
-        sharpe = (ret - rf) / vol if vol > 1e-12 else np.nan
-        rows.append(
-            {
-                "sim_id": i,
-                "ann_return": ret,
-                "ann_volatility": vol,
-                "sharpe_ratio": sharpe,
-            }
-        )
-    return pd.DataFrame(rows)
+    ann_returns = W @ mu
+    ann_vols = np.sqrt(np.einsum("ij,jk,ik->i", W, cov, W))
+    sharpe = np.divide(
+        ann_returns - rf,
+        ann_vols,
+        out=np.full(n_sims, np.nan, dtype=float),
+        where=ann_vols > 1e-12,
+    )
+    return pd.DataFrame(
+        {
+            "sim_id": np.arange(n_sims),
+            "ann_return": ann_returns,
+            "ann_volatility": ann_vols,
+            "sharpe_ratio": sharpe,
+        }
+    )
 
 
 def main() -> None:
@@ -319,9 +328,12 @@ def main() -> None:
         # Auto-fetch 13-week T-bill yield (^IRX) as risk-free rate
         @st.cache_data(ttl=3600)
         def _fetch_rf() -> float:
+            quote = latest_quotes(["^IRX"]).get("^IRX", {})
+            val = quote.get("price")
+            if val and val > 0:
+                return round(float(val) / 100, 4)
             try:
                 irx = yf.Ticker("^IRX").fast_info
-                # ^IRX is quoted in percent (e.g. 4.35 means 4.35%)
                 val = getattr(irx, "last_price", None)
                 if val and val > 0:
                     return round(float(val) / 100, 4)
@@ -337,10 +349,10 @@ def main() -> None:
             value=_auto_rf,
             step=0.001,
             format="%.4f",
-            help="Auto-fetched from US 13-week T-bill (^IRX). Edit manually if needed.",
+            help="Loaded from local DB first, then US 13-week T-bill (^IRX) if needed. Edit manually if needed.",
             key="mk_rf",
         )
-        st.caption(f"Auto-fetched: ^IRX = {_auto_rf*100:.2f}%  ·  cached 1 h")
+        st.caption(f"Risk-free estimate: ^IRX = {_auto_rf*100:.2f}%  ·  cached 1 h")
 
         run = st.button("Run optimization", type="primary", width="stretch", key="mk_run")
 
@@ -358,7 +370,7 @@ def main() -> None:
         return
 
     try:
-        with st.spinner("Downloading prices and building returns…"):
+        with st.spinner("Loading prices and building returns…"):
             prices = fetch_adj_close(tickers, start_d, end_d)
             cols = [c for c in tickers if c in prices.columns]
             if len(cols) < len(tickers):
@@ -501,4 +513,3 @@ def main() -> None:
 
 
 main()
-

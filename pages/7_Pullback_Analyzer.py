@@ -15,6 +15,8 @@ import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
 
+from utils.local_data import load_adjusted_close
+
 
 # ── Helper: RSI ──────────────────────────────────────────────────────────────
 def _calc_rsi(close: pd.Series, period: int = 14) -> pd.Series:
@@ -409,13 +411,20 @@ def main() -> None:
     if run_btn:
         end   = date.today()
         start = end - timedelta(days=365 * years + 30)
-        with st.spinner(f"Downloading {ticker} ({years}y)…"):
+        with st.spinner(f"Loading {ticker} ({years}y)…"):
             try:
-                raw = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
-                if raw.empty:
+                local = load_adjusted_close([ticker], start, end, min_rows=200)
+                if ticker in local.columns:
+                    close = local[ticker].dropna()
+                else:
+                    raw = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
+                    if raw.empty:
+                        st.error(f"No data for {ticker}.")
+                        return
+                    close = raw["Close"].squeeze().dropna()
+                if close.empty:
                     st.error(f"No data for {ticker}.")
                     return
-                close = raw["Close"].squeeze().dropna()
                 close.index = pd.to_datetime(close.index)
                 st.session_state.update({
                     "pa_close":  close,

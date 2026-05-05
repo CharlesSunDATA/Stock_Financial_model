@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -520,6 +521,25 @@ _SEC_UA   = "StockFinancialModel/1.0 research@example.com"
 _SEC_HDRS = {"User-Agent": _SEC_UA}
 
 
+def _project_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def _load_local_filing_text(symbol: str, filing_type: str) -> tuple[str, str] | None:
+    sym = (symbol or "").strip().upper()
+    kind = filing_type.strip().upper().replace("-", "")
+    candidates = [
+        _project_root() / "data" / f"{sym}_{kind}_latest.txt",
+        _project_root() / "data" / f"{sym}_{filing_type.strip().upper()}_latest.txt",
+    ]
+    for path in candidates:
+        if path.exists() and path.stat().st_size > 300:
+            text = path.read_text(encoding="utf-8", errors="replace").strip()
+            if len(text) >= 300:
+                return f"{sym} {filing_type.upper()} — Local text file", text
+    return None
+
+
 def _bs4_clean(html: str) -> str:
     """
     Convert SEC filing HTML (including iXBRL) to clean plain text.
@@ -626,6 +646,9 @@ def fetch_8k_sec(symbol: str) -> tuple[str, str]:
     sym = (symbol or "").strip().upper()
     if not sym:
         raise ValueError("Ticker is required.")
+    local = _load_local_filing_text(sym, "8K")
+    if local is not None:
+        return local
 
     cik = sec_cik_map().get(sym)
     if cik is None:
@@ -708,6 +731,9 @@ def fetch_mda_sec(symbol: str, filing_type: str = "10-K") -> tuple[str, str]:
     sym = (symbol or "").strip().upper()
     if not sym:
         raise ValueError("Ticker is required.")
+    local = _load_local_filing_text(sym, filing_type)
+    if local is not None:
+        return local
 
     cik = sec_cik_map().get(sym)
     if cik is None:
@@ -1093,4 +1119,3 @@ def main() -> None:
 
 
 main()
-

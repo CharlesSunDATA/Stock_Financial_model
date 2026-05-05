@@ -22,6 +22,18 @@ env/
 .streamlit/secrets.toml
 secrets.toml
 
+# Local SQLite databases
+*.db
+*.db-wal
+*.db-shm
+
+# Local singleton locks (scripts)
+.market_loader_fmp.lock
+
+# Local runtime cache and logs
+.cache/
+.logs/
+
 # Editor
 .idea/
 .vscode/
