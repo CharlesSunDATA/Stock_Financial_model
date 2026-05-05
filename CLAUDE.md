@@ -88,6 +88,9 @@ Schema migrations use `_add_column_if_missing()` in `scripts/init_db.py` — re-
 | `11_Fundamentals.py` | Fundamental data viewer from local DB |
 | `12_Opportunity_Score.py` | Weighted multi-factor opportunity ranking |
 | `13_Risk_Score.py` | Investment risk ranking |
+| `14_Smart_Money.py` | Insider purchases, buy/sell ratio, institutional 13-F flows |
+| `15_Portfolio_Watchlist.py` | Combined score, risk, momentum, targets, earnings per watchlist |
+| `16_Optical_Comms.py` | Optical sector leading indicators: hyperscaler capex, NVDA GPU proxy, DC REIT construction proxy, 800G/1.6T order keyword scanner, COHR transceiver pricing proxy |
 
 ### Conventions
 
