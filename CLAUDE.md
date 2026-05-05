@@ -91,6 +91,7 @@ Schema migrations use `_add_column_if_missing()` in `scripts/init_db.py` — re-
 | `14_Smart_Money.py` | Insider purchases, buy/sell ratio, institutional 13-F flows |
 | `15_Portfolio_Watchlist.py` | Combined score, risk, momentum, targets, earnings per watchlist |
 | `16_Optical_Comms.py` | Optical sector leading indicators: hyperscaler capex, NVDA GPU proxy, DC REIT construction proxy, 800G/1.6T order keyword scanner, COHR transceiver pricing proxy |
+| `17_Memory.py` | Memory sector leading indicators: AI/HBM demand proxy (NVDA/AMD), hyperscaler capex, memory equipment proxy (LRCX/AMAT/KLAC), MU gross margin DRAM pricing proxy, earnings keyword scanner |
 
 ### Conventions
 
