@@ -14,6 +14,7 @@ Pages:
 - Momentum Rankings (1/3/6/12-month composite momentum, top/bottom movers)
 - Stock Opportunity Score (daily weighted research ranking)
 - Stock Risk Score (investment risk ranking)
+- Industry Ranking (industry and peer ranking system)
 - Smart Money (insider purchases, buy/sell ratio, institutional 13-F ownership flows)
 - Portfolio Watchlist Dashboard (combined score, risk, momentum, targets, earnings)
 """
@@ -58,6 +59,7 @@ pg = st.navigation(
         st.Page("pages/11_Fundamentals.py",       title="Fundamentals",          icon="📊"),
         st.Page("pages/12_Opportunity_Score.py",  title="Opportunity Score",     icon="🎯"),
         st.Page("pages/13_Risk_Score.py",         title="Risk Score",            icon="🛡️"),
+        st.Page("pages/16_Industry_Ranking.py",   title="Industry Ranking",      icon="🏭"),
         st.Page("pages/14_Smart_Money.py",        title="Smart Money",           icon="🏦"),
         st.Page("pages/15_Portfolio_Watchlist.py", title="Portfolio Watchlist",  icon="🧭"),
     ]

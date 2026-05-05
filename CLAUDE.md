@@ -24,6 +24,35 @@ python3 scripts/init_db.py
 python3 scripts/init_db.py
 ```
 
+**Daily auto-update (launchd, runs at 08:00 every day):**
+```bash
+# Managed by ~/Library/LaunchAgents/com.stockmodel.dailyupdate.plist
+# Updates: EOD prices, earnings/economic calendar, stock news
+
+launchctl start com.stockmodel.dailyupdate   # trigger manually
+launchctl list | grep stockmodel             # check status
+tail -f logs/daily_update.log               # watch log
+
+# Disable / re-enable
+launchctl unload ~/Library/LaunchAgents/com.stockmodel.dailyupdate.plist
+launchctl load  ~/Library/LaunchAgents/com.stockmodel.dailyupdate.plist
+```
+
+**Weekly auto-update (launchd, runs at 08:00 every Sunday):**
+```bash
+# Managed by ~/Library/LaunchAgents/com.stockmodel.weeklyupdate.plist
+# Updates: fundamentals + ratios (update_fmp), income/CF/BS statements
+#          (update_fundamentals_fmp), valuation + analyst data
+#          (update_valuation_analyst_fmp) — all tickers in fmp_watchlist
+
+launchctl start com.stockmodel.weeklyupdate  # trigger manually
+tail -f logs/weekly_update.log              # watch log
+
+# Disable / re-enable
+launchctl unload ~/Library/LaunchAgents/com.stockmodel.weeklyupdate.plist
+launchctl load  ~/Library/LaunchAgents/com.stockmodel.weeklyupdate.plist
+```
+
 **Backfill data from FMP (Financial Modeling Prep):**
 ```bash
 python3 scripts/update_fmp.py AAPL MSFT NVDA          # fundamentals, ratios, estimates
