@@ -468,20 +468,26 @@ def _theme_bar_chart(theme_df: pd.DataFrame):
     if df.empty:
         return None
     colors = ["#22c55e" if v >= 0 else "#ef4444" for v in df["1M %"]]
+    max_ret = float(df["1M %"].max())
+    min_ret = float(df["1M %"].min())
+    x_min = min(0.0, min_ret * 1.2)
+    x_max = max(1.0, max_ret * 1.35)
     fig = go.Figure(go.Bar(
         x=df["1M %"], y=df["Theme"],
         orientation="h",
         marker_color=colors,
         text=[f"{v:+.1f}%" for v in df["1M %"]],
         textposition="outside",
+        cliponaxis=False,
         hovertemplate="%{y}: %{x:+.1f}%<extra></extra>",
     ))
     layout = _plot_base(max(280, len(df) * 38))
-    layout["margin"] = dict(l=10, r=70, t=48, b=10)
+    layout["margin"] = dict(l=10, r=110, t=48, b=10)
     layout["legend"] = dict(visible=False)
     fig.update_layout(**layout,
                       title=dict(text="Theme momentum — avg 1-month return", font=dict(size=13), x=0),
-                      xaxis=dict(ticksuffix="%", zeroline=True,
+                      xaxis=dict(range=[x_min, x_max],
+                                 ticksuffix="%", zeroline=True,
                                  zerolinecolor="rgba(255,255,255,0.3)",
                                  gridcolor="rgba(255,255,255,0.08)"),
                       yaxis=dict(tickfont=dict(size=12)))
