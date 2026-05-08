@@ -352,22 +352,12 @@ def _targets_ruler(
     return fig
 
 
-def main() -> None:
-    st.title("Analyst Sentiment Dashboard")
-    st.caption("Use analyst revisions as a sentiment indicator (local SQLite first, yfinance fallback).")
-
-    with st.sidebar:
-        st.header("Ticker")
-        ticker = st.text_input("Ticker symbol", value="NVDA").strip().upper() or "NVDA"
-        months = st.slider("Trend window (months)", 3, 12, 6)
-
+def render_analyst_sentiment(ticker: str, months: int) -> None:
     _info, price = _fetch_info_and_price(ticker)
-    # Prefer upgrades/downgrades for revision momentum (more available than recommendations)
     recs_ud = _fetch_upgrades_downgrades(ticker)
     recs = recs_ud if not recs_ud.empty else _fetch_recommendations(ticker)
     pt = _fetch_price_targets(ticker)
 
-    # ── Target price divergence ──────────────────────────────────────────────
     st.subheader("1. Price target divergence")
     c1, c2, c3, c4 = st.columns(4)
     with c1:
@@ -393,7 +383,6 @@ def main() -> None:
 
     st.divider()
 
-    # ── Recommendation trend ────────────────────────────────────────────────
     st.subheader("2. Recommendation revision momentum")
     trend = _monthly_trend(recs, months=months)
     if trend.empty:
@@ -458,8 +447,20 @@ def main() -> None:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-    with st.expander("Raw revision events (yfinance)", expanded=False):
+    with st.expander("Raw revision events", expanded=False):
         st.dataframe(recs.tail(200), use_container_width=True)
+
+
+def main() -> None:
+    st.title("Analyst Sentiment Dashboard")
+    st.caption("Use analyst revisions as a sentiment indicator (local SQLite first, yfinance fallback).")
+
+    with st.sidebar:
+        st.header("Ticker")
+        ticker = st.text_input("Ticker symbol", value="NVDA").strip().upper() or "NVDA"
+        months = st.slider("Trend window (months)", 3, 12, 6)
+
+    render_analyst_sentiment(ticker, months)
 
 
 if __name__ == "__main__":

@@ -27,6 +27,7 @@ from utils.local_data import (
     table_exists,
 )
 from utils.data_loader import fetch_quarterly_metrics
+from pages.modules.analyst_sentiment import render_analyst_sentiment
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -1295,6 +1296,8 @@ def main() -> None:
             if st.button("Clear cache", use_container_width=True):
                 st.cache_data.clear()
                 st.rerun()
+        with st.expander("Analyst Settings", expanded=False):
+            months = st.slider("Revision trend window (months)", 3, 12, 6)
 
     # ── inline ticker input ───────────────────────────────────────────────
     col_title, col_input = st.columns([3, 1])
@@ -1318,13 +1321,16 @@ def main() -> None:
         if last_report:
             st.caption(f"Last financial report: **{last_report}**")
 
-    tab_val, tab_fin = st.tabs(["📊 Valuation & DCF", "📋 Quarterly Financials"])
+    tab_val, tab_fin, tab_analyst = st.tabs(["📊 Valuation & DCF", "📋 Quarterly Financials", "🧠 Analyst Sentiment"])
 
     with tab_val:
         render_valuation_tab(ticker, g5, g_term, wacc)
 
     with tab_fin:
         render_financials_tab(ticker, source, limit)
+
+    with tab_analyst:
+        render_analyst_sentiment(ticker, months)
 
 
 main()

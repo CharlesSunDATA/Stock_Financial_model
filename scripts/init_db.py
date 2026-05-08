@@ -374,6 +374,118 @@ def init_db(db_path: Path | None = None) -> Path:
             """
         )
 
+        # ── Industry screening materialized tables ──────────────────────────
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS companies (
+              ticker TEXT PRIMARY KEY,
+              company_name TEXT,
+              sector TEXT,
+              industry TEXT,
+              market_cap REAL,
+              universe TEXT,
+              updated_at TEXT NOT NULL
+            );
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_companies_sector_industry
+            ON companies(sector, industry);
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS financials (
+              ticker TEXT PRIMARY KEY,
+              as_of_date TEXT,
+              revenue_growth REAL,
+              eps_growth REAL,
+              gross_margin REAL,
+              operating_margin REAL,
+              free_cash_flow REAL,
+              debt_to_equity REAL,
+              roe REAL,
+              roic REAL,
+              pe_ratio REAL,
+              forward_pe REAL,
+              ev_ebitda REAL,
+              updated_at TEXT NOT NULL
+            );
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS prices (
+              ticker TEXT PRIMARY KEY,
+              price_date TEXT,
+              price REAL,
+              high_52w REAL,
+              low_52w REAL,
+              ma50 REAL,
+              ma200 REAL,
+              beta REAL,
+              max_drawdown REAL,
+              volatility REAL,
+              updated_at TEXT NOT NULL
+            );
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS scores (
+              ticker TEXT PRIMARY KEY,
+              score_date TEXT NOT NULL,
+              total_score REAL,
+              growth_quality REAL,
+              profitability_quality REAL,
+              balance_sheet_safety REAL,
+              valuation_reasonableness REAL,
+              technical_downside_risk REAL,
+              upside_factors TEXT,
+              downside_risks TEXT,
+              valuation_comment TEXT,
+              risk_level TEXT,
+              industry_rank INTEGER,
+              overall_rank INTEGER,
+              updated_at TEXT NOT NULL
+            );
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_scores_total_score
+            ON scores(total_score DESC);
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS industry_rankings (
+              industry TEXT PRIMARY KEY,
+              sector TEXT,
+              score_date TEXT NOT NULL,
+              industry_score REAL,
+              quality_score REAL,
+              risk_score REAL,
+              upside_score REAL,
+              valuation_score REAL,
+              stock_count INTEGER,
+              top_stocks TEXT,
+              updated_at TEXT NOT NULL
+            );
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_industry_rankings_score
+            ON industry_rankings(industry_score DESC);
+            """
+        )
+
         conn.execute(
             """
             CREATE INDEX IF NOT EXISTS idx_prices_progress_last_date

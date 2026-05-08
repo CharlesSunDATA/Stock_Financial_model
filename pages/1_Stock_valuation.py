@@ -6,6 +6,7 @@ Do not call st.set_page_config here — the entrypoint app.py sets it.
 from __future__ import annotations
 
 import warnings
+import json
 from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Any
@@ -84,6 +85,166 @@ def _safe_float(x: Any, default: float | None = None) -> float | None:
         return default
 
 
+def _json_float(payload: Any, key: str) -> float | None:
+    if not payload:
+        return None
+    try:
+        data = json.loads(str(payload))
+    except (TypeError, json.JSONDecodeError):
+        return None
+    return _safe_float(data.get(key))
+
+
+def _valid_positive(value: float | None, *, max_value: float = 1000.0) -> float | None:
+    if value is None or not np.isfinite(value) or value <= 0 or value >= max_value:
+        return None
+    return float(value)
+
+
+def _local_trailing_pe(ticker: str) -> float | None:
+    sym = ticker.strip().upper()
+    db = default_db_path()
+    if not sym or not db.exists():
+        return None
+    try:
+        with connect_readonly(db) as conn:
+            if table_exists(conn, "key_metrics_ttm"):
+                row = conn.execute(
+                    """
+                    SELECT payload_json
+                    FROM key_metrics_ttm
+                    WHERE ticker = ?
+                    ORDER BY as_of_date DESC
+                    LIMIT 1
+                    """,
+                    (sym,),
+                ).fetchone()
+                if row:
+                    ey = _json_float(row[0], "earningsYieldTTM")
+                    if ey is not None and ey > 0:
+                        pe = 1.0 / ey
+                        if 0 < pe < 800:
+                            return float(pe)
+            if table_exists(conn, "financial_ratios"):
+                row = conn.execute(
+                    """
+                    SELECT pe_ratio
+                    FROM financial_ratios
+                    WHERE ticker = ?
+                    ORDER BY report_date DESC
+                    LIMIT 1
+                    """,
+                    (sym,),
+                ).fetchone()
+                if row:
+                    return _valid_positive(_safe_float(row[0]), max_value=800)
+    except Exception:
+        return None
+    return None
+
+
+def _local_valuation_fields(ticker: str, price: float | None) -> dict[str, Any]:
+    sym = ticker.strip().upper()
+    db = default_db_path()
+    out: dict[str, Any] = {}
+    if not sym or not db.exists():
+        return out
+    try:
+        with connect_readonly(db) as conn:
+            if table_exists(conn, "key_metrics_ttm"):
+                row = conn.execute(
+                    """
+                    SELECT ev_to_sales, payload_json
+                    FROM key_metrics_ttm
+                    WHERE ticker = ?
+                    ORDER BY as_of_date DESC
+                    LIMIT 1
+                    """,
+                    (sym,),
+                ).fetchone()
+                if row:
+                    ev_to_sales = _safe_float(row[0])
+                    payload = row[1]
+                    ey = _json_float(payload, "earningsYieldTTM")
+                    if ey is not None and ey > 0:
+                        out["trailingPE"] = 1.0 / ey
+                    if ev_to_sales is not None and ev_to_sales > 0:
+                        out["priceToSalesTrailing12Months"] = ev_to_sales
+                    ev_ebitda = _json_float(payload, "evToEBITDATTM")
+                    if ev_ebitda is not None and ev_ebitda > 0:
+                        out["enterpriseToEbitda"] = ev_ebitda
+
+            if table_exists(conn, "financial_ratios"):
+                row = conn.execute(
+                    """
+                    SELECT pe_ratio, pb_ratio
+                    FROM financial_ratios
+                    WHERE ticker = ?
+                    ORDER BY report_date DESC
+                    LIMIT 1
+                    """,
+                    (sym,),
+                ).fetchone()
+                if row:
+                    pe = _valid_positive(_safe_float(row[0]), max_value=800)
+                    pb = _valid_positive(_safe_float(row[1]), max_value=500)
+                    if pe is not None and out.get("trailingPE") is None:
+                        out["trailingPE"] = pe
+                    if pb is not None:
+                        out["priceToBook"] = pb
+
+            forward_eps = None
+            current_date = date.today().isoformat()
+            for table, date_col, eps_col in [
+                ("analyst_estimates_detail", "estimate_date", "estimated_eps_avg"),
+                ("analyst_estimates", "estimated_date", "estimated_eps"),
+            ]:
+                if not table_exists(conn, table):
+                    continue
+                row = conn.execute(
+                    f"""
+                    SELECT {eps_col}
+                    FROM {table}
+                    WHERE ticker = ?
+                      AND {date_col} > ?
+                      AND {eps_col} IS NOT NULL
+                      AND {eps_col} > 0
+                    ORDER BY {date_col}
+                    LIMIT 1
+                    """,
+                    (sym, current_date),
+                ).fetchone()
+                if row:
+                    forward_eps = _safe_float(row[0])
+                    break
+            if price and forward_eps and forward_eps > 0:
+                out["forwardPE"] = float(price) / float(forward_eps)
+
+            if table_exists(conn, "income_statement"):
+                eps_rows = conn.execute(
+                    """
+                    SELECT report_date, COALESCE(eps_diluted, eps)
+                    FROM income_statement
+                    WHERE ticker = ?
+                      AND COALESCE(eps_diluted, eps) IS NOT NULL
+                    ORDER BY report_date DESC
+                    LIMIT 8
+                    """,
+                    (sym,),
+                ).fetchall()
+                if len(eps_rows) >= 8:
+                    latest_ttm = sum(float(r[1]) for r in eps_rows[:4])
+                    prior_ttm = sum(float(r[1]) for r in eps_rows[4:8])
+                    if latest_ttm > 0 and prior_ttm > 0:
+                        growth_pct = (latest_ttm / prior_ttm - 1.0) * 100.0
+                        trailing_pe = _safe_float(out.get("trailingPE"))
+                        if trailing_pe and growth_pct > 0:
+                            out["pegRatio"] = trailing_pe / growth_pct
+    except Exception:
+        return out
+    return {k: v for k, v in out.items() if v is not None and np.isfinite(float(v))}
+
+
 @st.cache_data(ttl=60 * 60, show_spinner=False)
 def fetch_ticker_info(ticker: str) -> dict[str, Any]:
     """Cached local snapshot first, yfinance info only when local data is insufficient."""
@@ -133,6 +294,9 @@ def compute_peer_average_pe(ticker: str, info: dict[str, Any]) -> tuple[float | 
 
     @st.cache_data(ttl=60 * 60, show_spinner=False)
     def _peer_trailing_pe(sym: str) -> float | None:
+        local_pe = _local_trailing_pe(sym)
+        if local_pe is not None:
+            return local_pe
         try:
             inf = yf.Ticker(sym).info
             pe = _safe_float(inf.get("trailingPE"))
@@ -164,19 +328,26 @@ def build_market_data(ticker: str, info: dict[str, Any], hist_close: float | Non
     price = _safe_float(
         hist_close if hist_close is not None else info.get("currentPrice") or info.get("regularMarketPrice")
     )
+    merged = dict(info)
+    for key, value in _local_valuation_fields(ticker, price).items():
+        if _safe_float(merged.get(key)) is None:
+            merged[key] = value
     peer_avg, peer_used = compute_peer_average_pe(ticker, info)
     return MarketData(
         price=price,
-        trailing_pe=_safe_float(info.get("trailingPE")),
-        forward_pe=_safe_float(info.get("forwardPE")),
-        peg=_safe_float(info.get("pegRatio")),
-        pb=_safe_float(info.get("priceToBook")),
+        trailing_pe=_safe_float(merged.get("trailingPE")),
+        forward_pe=_safe_float(merged.get("forwardPE")),
+        peg=_safe_float(merged.get("pegRatio")),
+        pb=_safe_float(merged.get("priceToBook")),
         peer_avg_pe=peer_avg,
         peer_symbols_used=peer_used,
     )
 
 
 def _quarterly_eps_series(t: yf.Ticker) -> pd.Series | None:
+    local = _local_quarterly_eps_series(str(getattr(t, "ticker", "") or ""))
+    if local is not None and not local.empty:
+        return local
     q = None
     for attr in ("quarterly_income_stmt", "quarterly_financials"):
         try:
@@ -198,6 +369,36 @@ def _quarterly_eps_series(t: yf.Ticker) -> pd.Series | None:
             s.index = pd.DatetimeIndex(dti).tz_localize(None)
             return s.sort_index()
     return None
+
+
+def _local_quarterly_eps_series(ticker: str) -> pd.Series | None:
+    sym = ticker.strip().upper()
+    db = default_db_path()
+    if not sym or not db.exists():
+        return None
+    try:
+        with connect_readonly(db) as conn:
+            if not table_exists(conn, "income_statement"):
+                return None
+            df = pd.read_sql_query(
+                """
+                SELECT report_date, COALESCE(eps_diluted, eps) AS eps
+                FROM income_statement
+                WHERE ticker = ?
+                  AND COALESCE(eps_diluted, eps) IS NOT NULL
+                ORDER BY report_date
+                """,
+                conn,
+                params=(sym,),
+            )
+    except Exception:
+        return None
+    if df.empty:
+        return None
+    s = pd.to_numeric(df["eps"], errors="coerce")
+    idx = pd.to_datetime(df["report_date"], errors="coerce")
+    out = pd.Series(s.to_numpy(), index=pd.DatetimeIndex(idx).tz_localize(None)).dropna().sort_index()
+    return out if not out.empty else None
 
 
 def _annual_diluted_eps_series(t: yf.Ticker) -> pd.Series | None:
@@ -294,6 +495,82 @@ def _quarterly_row_series(t: yf.Ticker, stmt_attrs: tuple[str, ...], row_names: 
     return None
 
 
+def _local_quarterly_amount_series(ticker: str, table: str, column: str) -> pd.Series | None:
+    sym = ticker.strip().upper()
+    db = default_db_path()
+    if not sym or not db.exists():
+        return None
+    try:
+        with connect_readonly(db) as conn:
+            if not table_exists(conn, table):
+                return None
+            df = pd.read_sql_query(
+                f"""
+                SELECT report_date, {column} AS value
+                FROM {table}
+                WHERE ticker = ?
+                  AND {column} IS NOT NULL
+                ORDER BY report_date
+                """,
+                conn,
+                params=(sym,),
+            )
+    except Exception:
+        return None
+    if df.empty:
+        return None
+    values = pd.to_numeric(df["value"], errors="coerce")
+    idx = pd.to_datetime(df["report_date"], errors="coerce")
+    out = pd.Series(values.to_numpy(), index=pd.DatetimeIndex(idx).tz_localize(None)).dropna().sort_index()
+    return out if not out.empty else None
+
+
+def _local_latest_shares(ticker: str) -> float | None:
+    sym = ticker.strip().upper()
+    db = default_db_path()
+    if not sym or not db.exists():
+        return None
+    try:
+        with connect_readonly(db) as conn:
+            if table_exists(conn, "balance_sheet"):
+                row = conn.execute(
+                    """
+                    SELECT outstanding_shares
+                    FROM balance_sheet
+                    WHERE ticker = ?
+                      AND outstanding_shares IS NOT NULL
+                      AND outstanding_shares > 0
+                    ORDER BY report_date DESC
+                    LIMIT 1
+                    """,
+                    (sym,),
+                ).fetchone()
+                if row:
+                    shares = _safe_float(row[0])
+                    if shares and shares > 0:
+                        return shares
+            if table_exists(conn, "income_statement"):
+                row = conn.execute(
+                    """
+                    SELECT weighted_avg_shares_out
+                    FROM income_statement
+                    WHERE ticker = ?
+                      AND weighted_avg_shares_out IS NOT NULL
+                      AND weighted_avg_shares_out > 0
+                    ORDER BY report_date DESC
+                    LIMIT 1
+                    """,
+                    (sym,),
+                ).fetchone()
+                if row:
+                    shares = _safe_float(row[0])
+                    if shares and shares > 0:
+                        return shares
+    except Exception:
+        return None
+    return None
+
+
 def _ttm_points_from_quarterly_amounts(q: pd.Series) -> pd.Series:
     """
     TTM series for non-per-share amounts (e.g., revenue, capex).
@@ -330,23 +607,29 @@ def build_monthly_ps_and_capex_history(ticker: str, years: int = 5) -> pd.DataFr
     if close_m is None or close_m.empty:
         return None
 
-    rev_q = _quarterly_row_series(
-        t,
-        stmt_attrs=("quarterly_income_stmt", "quarterly_financials"),
-        row_names=("Total Revenue", "Operating Revenue", "TotalRevenue"),
-    )
-    capex_q = _quarterly_row_series(
-        t,
-        stmt_attrs=("quarterly_cashflow", "quarterly_cash_flow"),
-        row_names=("Capital Expenditure", "Capital Expenditures"),
-    )
+    rev_q = _local_quarterly_amount_series(ticker, "income_statement", "revenue")
+    if rev_q is None or rev_q.empty:
+        rev_q = _quarterly_row_series(
+            t,
+            stmt_attrs=("quarterly_income_stmt", "quarterly_financials"),
+            row_names=("Total Revenue", "Operating Revenue", "TotalRevenue"),
+        )
+    capex_q = _local_quarterly_amount_series(ticker, "cash_flow_statement", "capital_expenditure")
+    if capex_q is None or capex_q.empty:
+        capex_q = _quarterly_row_series(
+            t,
+            stmt_attrs=("quarterly_cashflow", "quarterly_cash_flow"),
+            row_names=("Capital Expenditure", "Capital Expenditures"),
+        )
     if rev_q is None or rev_q.empty:
         return None
 
     rev_ttm = _ttm_points_from_quarterly_amounts(rev_q)
     capex_ttm = _ttm_points_from_quarterly_amounts(capex_q) if capex_q is not None and not capex_q.empty else None
 
-    shares = _safe_float(t.info.get("sharesOutstanding"))
+    shares = _local_latest_shares(ticker)
+    if shares is None or shares <= 0:
+        shares = _safe_float(t.info.get("sharesOutstanding"))
     if shares is None or shares <= 0:
         shares = None
 
@@ -848,16 +1131,16 @@ def _local_fundamental_inputs(ticker: str) -> FundamentalInputs | None:
                 and table_exists(conn, "balance_sheet")
             ):
                 return None
-            cf = conn.execute(
+            cf_rows = conn.execute(
                 """
                 SELECT operating_cash_flow, capital_expenditure, free_cash_flow
                 FROM cash_flow_statement
                 WHERE ticker = ?
                 ORDER BY report_date DESC
-                LIMIT 1
+                LIMIT 4
                 """,
                 (sym,),
-            ).fetchone()
+            ).fetchall()
             bs = conn.execute(
                 """
                 SELECT cash_and_equivalents, outstanding_shares, total_debt
@@ -868,26 +1151,53 @@ def _local_fundamental_inputs(ticker: str) -> FundamentalInputs | None:
                 """,
                 (sym,),
             ).fetchone()
+            shares_row = None
+            if table_exists(conn, "income_statement"):
+                shares_row = conn.execute(
+                    """
+                    SELECT weighted_avg_shares_out
+                    FROM income_statement
+                    WHERE ticker = ?
+                      AND weighted_avg_shares_out IS NOT NULL
+                      AND weighted_avg_shares_out > 0
+                    ORDER BY report_date DESC
+                    LIMIT 1
+                    """,
+                    (sym,),
+                ).fetchone()
     except Exception:
         return None
-    if not cf:
+    if not cf_rows:
         return None
-    fcf = _safe_float(cf[2])
-    if fcf is None:
-        ocf = _safe_float(cf[0], 0.0) or 0.0
-        capex = _safe_float(cf[1], 0.0) or 0.0
-        fcf = ocf + capex
-    if fcf is None:
+
+    fcf_values: list[float] = []
+    for row in cf_rows:
+        fcf = _safe_float(row[2])
+        if fcf is None:
+            ocf = _safe_float(row[0], 0.0) or 0.0
+            capex = _safe_float(row[1], 0.0) or 0.0
+            fcf = ocf + capex
+        if fcf is not None and np.isfinite(fcf):
+            fcf_values.append(float(fcf))
+    if not fcf_values:
         return None
+    fcf_base = sum(fcf_values)
+
     cash = _safe_float(bs[0], 0.0) if bs else 0.0
     shares = _safe_float(bs[1]) if bs else None
+    if shares is None or shares <= 0:
+        shares = _safe_float(shares_row[0]) if shares_row else None
     debt = _safe_float(bs[2], 0.0) if bs else 0.0
     notes: list[str] = ["Fundamental inputs loaded from local SQLite"]
+    if len(fcf_values) >= 4:
+        notes.append("Base-year FCF uses latest four quarters (TTM)")
+    else:
+        notes.append(f"Base-year FCF uses {len(fcf_values)} available quarter(s)")
     if shares is None or shares <= 0:
         notes.append("Local shares outstanding missing; denominator set to 1")
         shares = 1.0
     return FundamentalInputs(
-        fcf_base=float(fcf),
+        fcf_base=float(fcf_base),
         shares=max(float(shares), 1e-12),
         net_debt=float(debt or 0.0) - float(cash or 0.0),
         used_defaults=notes,

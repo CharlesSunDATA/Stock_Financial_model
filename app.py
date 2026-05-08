@@ -51,15 +51,10 @@ pg = st.navigation(
     [
         st.Page("pages/0_Dashboard.py",          title="Market Overview",       icon="📊", default=True),
         st.Page("pages/1_Stock_Analysis.py",       title="Stock Analysis",        icon="💹"),
-        st.Page("pages/3_Markowitz_opt.py",       title="Markowitz Optimization", icon="⚖️"),
-        st.Page("pages/4_Technical_backtester.py", title="Technical Backtester",  icon="📈"),
-        st.Page("pages/5_Earnings_Call_NLP.py",   title="Earnings Call Analyzer",     icon="🎙️"),
-        st.Page("pages/6_Earnings_Calendar.py",   title="Earnings Calendar",     icon="📅"),
-        st.Page("pages/7_Pullback_Analyzer.py",   title="Pullback Analyzer",     icon="📉"),
-        st.Page("pages/8_Analyst_Sentiment.py",   title="Analyst Sentiment",     icon="🧠"),
+        st.Page("pages/3_Technical_Analyser.py",   title="Technical Analyser",    icon="📐"),
+        st.Page("pages/5_Earnings_Hub.py",         title="Earnings Analyst",      icon="📰"),
         st.Page("pages/9_Market_Trend.py",        title="Market Trend",          icon="🌐"),
         st.Page("pages/10_Momentum_Report.py",    title="Momentum Rankings",     icon="🚀"),
-        st.Page("pages/11_Fundamentals.py",       title="Fundamentals",          icon="📊"),
         st.Page("pages/12_Opportunity_Score.py",  title="Opportunity Score",     icon="🎯"),
         st.Page("pages/13_Risk_Score.py",         title="Risk Score",            icon="🛡️"),
         st.Page("pages/16_Industry_Ranking.py",   title="Industry Ranking",      icon="🏭"),
@@ -67,7 +62,6 @@ pg = st.navigation(
         st.Page("pages/15_Portfolio_Watchlist.py", title="Portfolio Watchlist",  icon="🧭"),
         st.Page("pages/16_Optical_Comms.py",       title="Optical Communications", icon="💡"),
         st.Page("pages/17_Memory.py",               title="Memory Industry",        icon="🧠"),
-        st.Page("pages/18_AI_Data_Center_Research.py", title="AI Data Center Research", icon="📁"),
         st.Page("pages/18_Supply_Chain.py",         title="Supply Chain Explorer",  icon="🔗"),
     ]
 )
