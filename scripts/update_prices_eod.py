@@ -143,13 +143,15 @@ class AlphaVantageClient:
             return []
 
         rows: list[dict[str, Any]] = []
+        start_text = date_from.isoformat()
+        end_text = date_to.isoformat()
         for day_text, values in series.items():
             day = _parse_iso_date(day_text)
-            if day is None or day < date_from or day > date_to or not isinstance(values, dict):
+            if day is None or day < start_text or day > end_text or not isinstance(values, dict):
                 continue
             rows.append(
                 {
-                    "date": day.isoformat(),
+                    "date": day,
                     "open": values.get("1. open"),
                     "high": values.get("2. high"),
                     "low": values.get("3. low"),
