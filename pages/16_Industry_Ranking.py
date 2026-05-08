@@ -41,6 +41,12 @@ def _load_materialized() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.D
     )
 
 
+def _decode_numeric(value):
+    if isinstance(value, bytes):
+        return int.from_bytes(value, byteorder="little", signed=True)
+    return value
+
+
 def _score_bar(df: pd.DataFrame, top_n: int) -> go.Figure:
     sub = df.dropna(subset=["industry_score"]).head(top_n).iloc[::-1]
     fig = go.Figure(
@@ -71,7 +77,12 @@ def _stock_scores(companies: pd.DataFrame, financials: pd.DataFrame, prices: pd.
     out = scores.copy()
     for part in (companies, financials, prices):
         if not part.empty:
-            out = out.merge(part, on="ticker", how="left", suffixes=("", "_source"))
+            duplicate_cols = [col for col in part.columns if col != "ticker" and col in out.columns]
+            merge_part = part.drop(columns=duplicate_cols)
+            out = out.merge(merge_part, on="ticker", how="left")
+    for col in ["industry_rank", "overall_rank"]:
+        if col in out:
+            out[col] = pd.to_numeric(out[col].map(_decode_numeric), errors="coerce")
     return out
 
 
