@@ -15,7 +15,7 @@ echo "========== $(date '+%Y-%m-%d %H:%M:%S') =========="
 cd "$REPO"
 
 echo "[1/3] Updating EOD prices..."
-"$PYTHON" -m scripts.update_prices_eod --mode per-symbol --universe profile --calls-per-minute 240 --max-retries 3
+"$PYTHON" -m scripts.update_prices_eod --mode per-symbol --universe profile --calls-per-minute 240 --max-retries 3 --fallback-source alpha-vantage --alpha-calls-per-minute 5
 
 echo "[2/3] Updating calendars..."
 "$PYTHON" -m scripts.update_calendars_fmp

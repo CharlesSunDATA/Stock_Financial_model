@@ -9,6 +9,7 @@ keep breadth and moving-average dashboards current after the US close.
 from __future__ import annotations
 
 import argparse
+import os
 import sqlite3
 import time
 from datetime import date, datetime, timedelta
@@ -47,6 +48,118 @@ except ModuleNotFoundError:  # pragma: no cover
         init_db,
         upsert_prices_eod,
     )
+
+
+ALPHA_VANTAGE_BASE_URL = "https://www.alphavantage.co/query"
+
+
+def _read_secret_value(*keys: str) -> str:
+    candidates = [
+        Path.cwd() / ".streamlit" / "secrets.toml",
+        Path(__file__).resolve().parents[1] / ".streamlit" / "secrets.toml",
+    ]
+    for path in candidates:
+        if not path.exists():
+            continue
+        try:
+            try:
+                import tomllib
+            except ImportError:  # pragma: no cover
+                import tomli as tomllib  # type: ignore
+
+            data = tomllib.loads(path.read_text())
+            for key in keys:
+                value = str(data.get(key, "") or "").strip()
+                if value:
+                    return value
+        except Exception:
+            for line in path.read_text().splitlines():
+                stripped = line.strip()
+                for key in keys:
+                    if stripped.startswith(key):
+                        parts = stripped.split("=", 1)
+                        if len(parts) == 2:
+                            value = parts[1].strip().strip('"').strip("'")
+                            if value:
+                                return value
+    return ""
+
+
+def _get_alpha_vantage_key() -> str:
+    for env_key in ("ALPHA_VANTAGE_API_KEY", "ALPHAVANTAGE_API_KEY", "ALPHA_VANTAGE_KEY"):
+        value = os.getenv(env_key, "").strip()
+        if value:
+            return value
+    return _read_secret_value("ALPHA_VANTAGE_API_KEY", "ALPHAVANTAGE_API_KEY", "ALPHA_VANTAGE_KEY")
+
+
+class AlphaVantageClient:
+    def __init__(self, api_key: str, *, calls_per_minute: int = 5) -> None:
+        self.api_key = api_key
+        self.calls_per_minute = max(1, int(calls_per_minute))
+        self._last_call = 0.0
+
+    def _wait(self) -> None:
+        min_interval = 60.0 / self.calls_per_minute
+        elapsed = time.monotonic() - self._last_call
+        if elapsed < min_interval:
+            time.sleep(min_interval - elapsed)
+        self._last_call = time.monotonic()
+
+    def _fetch_daily_payload(self, *, function_name: str, symbol: str) -> dict[str, Any]:
+        self._wait()
+        resp = requests.get(
+            ALPHA_VANTAGE_BASE_URL,
+            params={
+                "function": function_name,
+                "symbol": symbol,
+                "outputsize": "compact",
+                "apikey": self.api_key,
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        payload = resp.json()
+        if not isinstance(payload, dict):
+            return {}
+        return payload
+
+    def fetch_daily_adjusted(self, *, symbol: str, date_from: date, date_to: date) -> list[dict[str, Any]]:
+        payload = self._fetch_daily_payload(function_name="TIME_SERIES_DAILY_ADJUSTED", symbol=symbol)
+        if payload.get("Error Message"):
+            raise ValueError(str(payload.get("Error Message")))
+        info = str(payload.get("Information") or "")
+        if info and "premium" in info.lower():
+            payload = self._fetch_daily_payload(function_name="TIME_SERIES_DAILY", symbol=symbol)
+            if payload.get("Error Message"):
+                raise ValueError(str(payload.get("Error Message")))
+            if payload.get("Note") or payload.get("Information"):
+                raise RuntimeError(str(payload.get("Note") or payload.get("Information")))
+        elif payload.get("Note") or payload.get("Information"):
+            raise RuntimeError(str(payload.get("Note") or payload.get("Information")))
+
+        series = payload.get("Time Series (Daily)", {})
+        if not isinstance(series, dict):
+            return []
+
+        rows: list[dict[str, Any]] = []
+        for day_text, values in series.items():
+            day = _parse_iso_date(day_text)
+            if day is None or day < date_from or day > date_to or not isinstance(values, dict):
+                continue
+            rows.append(
+                {
+                    "date": day.isoformat(),
+                    "open": values.get("1. open"),
+                    "high": values.get("2. high"),
+                    "low": values.get("3. low"),
+                    "close": values.get("4. close"),
+                    "adjClose": values.get("5. adjusted close") or values.get("4. close"),
+                    "volume": values.get("6. volume") or values.get("5. volume"),
+                }
+            )
+        rows.sort(key=lambda r: str(r.get("date", "")))
+        return rows
 
 
 def _latest_prices_date(conn: sqlite3.Connection) -> date | None:
@@ -142,6 +255,8 @@ def _update_per_symbol(
     batch_size: int,
     universe: str,
     max_retries: int,
+    fallback_source: str,
+    alpha_client: AlphaVantageClient | None,
 ) -> int:
     if universe == "profile":
         query = """
@@ -183,10 +298,13 @@ def _update_per_symbol(
         tickers = tickers[:batch_size]
 
     print(f"per-symbol update: universe={universe}, tickers={len(tickers):,}, range={start.isoformat()}->{end.isoformat()}")
+    if fallback_source == "alpha-vantage" and alpha_client is None:
+        print("Alpha Vantage fallback requested, but no Alpha Vantage API key was found; fallback is disabled.", flush=True)
     total = 0
     failed: list[str] = []
     for i, ticker in enumerate(tickers, start=1):
         rows: list[dict[str, Any]] = []
+        fmp_failed = False
         for attempt in range(1, max(1, max_retries) + 1):
             try:
                 print(f"[{i}/{len(tickers)}] {ticker}: fetching historical-price-eod/full... attempt={attempt}", flush=True)
@@ -200,10 +318,26 @@ def _update_per_symbol(
             except requests.RequestException as e:
                 print(f"[{i}/{len(tickers)}] {ticker}: request failed ({type(e).__name__}): {e}", flush=True)
                 if attempt >= max(1, max_retries):
-                    failed.append(ticker)
+                    fmp_failed = True
                     rows = []
                 else:
                     time.sleep(min(10, attempt * 2))
+
+        if fallback_source == "alpha-vantage" and alpha_client is not None:
+            fmp_upsertable = any(_parse_iso_date(r.get("date")) for r in rows if isinstance(r, dict))
+            if fmp_failed or not fmp_upsertable:
+                try:
+                    print(f"[{i}/{len(tickers)}] {ticker}: trying Alpha Vantage fallback...", flush=True)
+                    rows = alpha_client.fetch_daily_adjusted(symbol=ticker, date_from=start, date_to=end)
+                    print(f"[{i}/{len(tickers)}] {ticker}: Alpha Vantage rows={len(rows):,}", flush=True)
+                except (requests.RequestException, RuntimeError, ValueError) as e:
+                    print(f"[{i}/{len(tickers)}] {ticker}: Alpha Vantage fallback failed ({type(e).__name__}): {e}", flush=True)
+                    if fmp_failed:
+                        failed.append(ticker)
+                    rows = []
+        elif fmp_failed:
+            failed.append(ticker)
+
         n_rows = _upsert_symbol_rows(conn, ticker=ticker, rows=rows)
         conn.commit()
         total += n_rows
@@ -224,6 +358,13 @@ def main() -> None:
     ap.add_argument("--batch-size", type=int, default=0, help="Per-symbol mode only. 0 means all lagging tickers.")
     ap.add_argument("--universe", choices=["all", "profile", "watchlist"], default="all", help="Per-symbol ticker universe.")
     ap.add_argument("--max-retries", type=int, default=3, help="Per-symbol request retries before skipping a ticker.")
+    ap.add_argument(
+        "--fallback-source",
+        choices=["none", "alpha-vantage"],
+        default="none",
+        help="Per-symbol mode only. Try this source when FMP returns no rows or fails.",
+    )
+    ap.add_argument("--alpha-calls-per-minute", type=int, default=5, help="Alpha Vantage fallback rate limit.")
     ap.add_argument("--no-skip-completed", action="store_true", help="Bulk mode only.")
     args = ap.parse_args()
 
@@ -232,6 +373,11 @@ def main() -> None:
 
     db_path = init_db(_db_path())
     client = FmpClient(FMP_API_KEY, calls_per_minute=int(args.calls_per_minute))
+    alpha_client = None
+    if str(args.fallback_source) == "alpha-vantage":
+        alpha_key = _get_alpha_vantage_key()
+        if alpha_key:
+            alpha_client = AlphaVantageClient(alpha_key, calls_per_minute=int(args.alpha_calls_per_minute))
 
     with sqlite3.connect(str(db_path)) as conn:
         conn.execute("PRAGMA foreign_keys=ON;")
@@ -265,6 +411,8 @@ def main() -> None:
                     batch_size=max(0, int(args.batch_size)),
                     universe=str(args.universe),
                     max_retries=max(1, int(args.max_retries)),
+                    fallback_source=str(args.fallback_source),
+                    alpha_client=alpha_client,
                 )
         except requests.HTTPError as e:
             if args.mode == "bulk":
