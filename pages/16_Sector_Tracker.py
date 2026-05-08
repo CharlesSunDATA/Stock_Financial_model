@@ -1,7 +1,6 @@
 """Sector Tracker.
 
-Unified theme and sector dashboard for price momentum, relative strength,
-leading proxies, capex, and margin signals.
+Single-page sector rotation board with sector and ticker rankings.
 """
 
 from __future__ import annotations
@@ -15,24 +14,8 @@ import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
 
-from utils.data_loader import fetch_quarterly_metrics
-
-
 BENCHMARK = "SPY"
 MOMENTUM_WINDOWS = {"1W": 5, "1M": 21, "3M": 63, "6M": 126}
-
-HYPERSCALERS = {
-    "META": "Meta",
-    "GOOGL": "Alphabet",
-    "AMZN": "Amazon",
-    "MSFT": "Microsoft",
-}
-
-SIGNAL_COLORS = {
-    "Bullish": "#2ecc71",
-    "Neutral": "#f1c40f",
-    "Bearish": "#e74c3c",
-}
 
 
 @dataclass(frozen=True)
@@ -131,38 +114,16 @@ def _load_prices(tickers: tuple[str, ...], days: int) -> pd.DataFrame:
     return closes
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
-def _load_quarterly(ticker: str, quarters: int = 10) -> pd.DataFrame:
-    df = fetch_quarterly_metrics(ticker, num_quarters=quarters)
-    if df.empty or "total_revenue" not in df.columns:
-        return pd.DataFrame()
-    cols = ["period_end", "total_revenue", "gross_margin_pct", "operating_margin_pct", "capex"]
-    out = df[[c for c in cols if c in df.columns]].copy()
-    out["period_end"] = pd.to_datetime(out["period_end"], errors="coerce")
-    out = out.dropna(subset=["period_end"])
-    if "total_revenue" in out:
-        out["revenue_yoy_pct"] = out["total_revenue"].pct_change(4) * 100
-    if "capex" in out:
-        out["capex_abs"] = out["capex"].abs()
-        out["capex_yoy_pct"] = out["capex_abs"].pct_change(4) * 100
-    return out
-
-
 def _pct(v) -> str:
     if pd.isna(v):
         return "-"
     return f"{float(v):+.1f}%"
 
 
-def _signal(value, bull: float = 5.0, bear: float = -5.0) -> str:
+def _score_label(value) -> str:
     if pd.isna(value):
-        return "Neutral"
-    value = float(value)
-    if value > bull:
-        return "Bullish"
-    if value < bear:
-        return "Bearish"
-    return "Neutral"
+        return "-"
+    return f"{float(value):.1f}"
 
 
 def _momentum_table(prices: pd.DataFrame, tickers: list[str], names: dict[str, str]) -> pd.DataFrame:
@@ -181,7 +142,11 @@ def _momentum_table(prices: pd.DataFrame, tickers: list[str], names: dict[str, s
     df = pd.DataFrame(rows)
     if df.empty:
         return df
-    df["Score"] = df[["1M", "3M", "6M"]].mean(axis=1)
+    df["Score"] = (
+        df["1M"].fillna(0) * 0.45
+        + df["3M"].fillna(0) * 0.35
+        + df["6M"].fillna(0) * 0.20
+    )
     return df.sort_values("Score", ascending=False, na_position="last").reset_index(drop=True)
 
 
@@ -199,141 +164,140 @@ def _sector_summary(prices: pd.DataFrame, sectors: dict[str, SectorConfig]) -> p
             "1M": mom["1M"].mean(),
             "3M": mom["3M"].mean(),
             "6M": mom["6M"].mean(),
+            "Score": mom["Score"].mean(),
             "Positive 1M": (mom["1M"] > 0).mean() * 100,
             "Leader": str(mom.iloc[0]["Ticker"]),
             "Laggard": str(mom.iloc[-1]["Ticker"]),
         })
-    return pd.DataFrame(rows).sort_values("1M", ascending=False, na_position="last")
-
-
-def _relative_chart(prices: pd.DataFrame, tickers: list[str], days: int) -> go.Figure:
-    fig = go.Figure()
-    if prices.empty:
-        return fig
-    cutoff = prices.index.max() - pd.Timedelta(days=days)
-    sub = prices[prices.index >= cutoff]
-    for ticker in tickers + [BENCHMARK]:
-        if ticker not in sub.columns:
-            continue
-        series = sub[ticker].dropna()
-        if series.empty:
-            continue
-        norm = series / series.iloc[0] * 100
-        is_benchmark = ticker == BENCHMARK
-        fig.add_trace(go.Scatter(
-            x=norm.index,
-            y=norm.values,
-            name=ticker,
-            line=dict(width=3 if is_benchmark else 1.6, dash="dash" if is_benchmark else "solid", color="#9ca3af" if is_benchmark else None),
-            hovertemplate=f"<b>{ticker}</b><br>%{{x|%Y-%m-%d}}<br>%{{y:.1f}}<extra></extra>",
-        ))
-    fig.add_hline(y=100, line_dash="dot", line_color="rgba(255,255,255,0.35)", line_width=1)
-    fig.update_layout(**_dark_layout(380), yaxis_title="Indexed (start = 100)")
-    return fig
+    return pd.DataFrame(rows).sort_values("Score", ascending=False, na_position="last")
 
 
 def _summary_bar(summary: pd.DataFrame) -> go.Figure:
-    df = summary.dropna(subset=["1M"]).sort_values("1M")
-    colors = ["#2ecc71" if v >= 0 else "#e74c3c" for v in df["1M"]]
+    df = summary.dropna(subset=["Score"]).sort_values("Score")
+    colors = ["#2ecc71" if v >= 0 else "#e74c3c" for v in df["Score"]]
     fig = go.Figure(go.Bar(
-        x=df["1M"],
+        x=df["Score"],
         y=df["Sector"],
         orientation="h",
         marker_color=colors,
-        text=[_pct(v) for v in df["1M"]],
+        text=[_score_label(v) for v in df["Score"]],
         textposition="outside",
         cliponaxis=False,
     ))
-    max_x = max(1.0, float(df["1M"].max()) * 1.35) if not df.empty else 1
-    min_x = min(0.0, float(df["1M"].min()) * 1.25) if not df.empty else 0
+    max_x = max(1.0, float(df["Score"].max()) * 1.35) if not df.empty else 1
+    min_x = min(0.0, float(df["Score"].min()) * 1.25) if not df.empty else 0
     layout = _dark_layout(max(330, len(df) * 38))
     layout["margin"] = dict(l=10, r=120, t=20, b=0)
     layout["showlegend"] = False
-    layout["xaxis"] = dict(range=[min_x, max_x], ticksuffix="%", gridcolor="#1e2530")
+    layout["xaxis"] = dict(range=[min_x, max_x], title="Composite score", gridcolor="#1e2530")
     fig.update_layout(**layout)
     return fig
 
 
-def _revenue_chart(df: pd.DataFrame, ticker: str) -> go.Figure:
-    fig = go.Figure()
-    if df.empty:
-        return fig
-    x = df["period_end"].dt.to_period("Q").astype(str)
-    fig.add_trace(go.Bar(
-        x=x,
-        y=df["total_revenue"] / 1e9,
-        name="Revenue ($B)",
-        marker_color="#38bdf8",
-        hovertemplate=f"<b>{ticker}</b><br>%{{x}}<br>Revenue: $%{{y:.1f}}B<extra></extra>",
-    ))
-    if "revenue_yoy_pct" in df:
-        valid = df["revenue_yoy_pct"].notna()
-        fig.add_trace(go.Scatter(
-            x=x[valid],
-            y=df.loc[valid, "revenue_yoy_pct"],
-            name="Revenue YoY %",
-            yaxis="y2",
-            mode="lines+markers",
-            line=dict(color="#facc15", width=2),
-        ))
-    layout = _dark_layout(300)
-    layout["yaxis"] = dict(title="Revenue ($B)", gridcolor="#1e2530")
-    layout["yaxis2"] = dict(title="YoY %", overlaying="y", side="right", showgrid=False)
-    fig.update_layout(**layout)
-    return fig
-
-
-def _capex_chart(capex_data: dict[str, pd.DataFrame]) -> go.Figure:
-    fig = go.Figure()
-    for ticker, df in capex_data.items():
-        if df.empty or "capex_abs" not in df:
+def _all_stock_rankings(prices: pd.DataFrame, sectors: dict[str, SectorConfig]) -> pd.DataFrame:
+    frames: list[pd.DataFrame] = []
+    for sector_name, config in sectors.items():
+        mom = _momentum_table(prices, list(config.tickers), config.tickers)
+        if mom.empty:
             continue
-        fig.add_trace(go.Bar(
-            x=df["period_end"].dt.to_period("Q").astype(str),
-            y=df["capex_abs"] / 1e9,
-            name=ticker,
-            hovertemplate=f"<b>{ticker}</b><br>%{{x}}<br>Capex: $%{{y:.1f}}B<extra></extra>",
-        ))
-    fig.update_layout(**_dark_layout(330), barmode="group", yaxis_title="Capex ($B)")
-    return fig
+        mom.insert(0, "Sector", sector_name)
+        frames.append(mom)
+    if not frames:
+        return pd.DataFrame()
+    out = pd.concat(frames, ignore_index=True)
+    out["Rank"] = out["Score"].rank(method="first", ascending=False).astype(int)
+    return out.sort_values("Score", ascending=False).reset_index(drop=True)
 
 
-def _display_momentum(df: pd.DataFrame) -> None:
+def _sector_cards(summary: pd.DataFrame) -> None:
+    cards = []
+    for idx, row in summary.reset_index(drop=True).iterrows():
+        score = row.get("Score")
+        border = "#22c55e" if pd.notna(score) and float(score) >= 0 else "#ef4444"
+        cards.append(
+            f"<div class='sector-card' style='border-color:{border};'>"
+            f"<div class='sector-rank'>#{idx + 1}</div>"
+            f"<div class='sector-name'>{row['Sector']}</div>"
+            f"<div class='sector-score'>{_score_label(score)}</div>"
+            f"<div class='sector-sub'>1M {_pct(row.get('1M'))} · 3M {_pct(row.get('3M'))}</div>"
+            f"<div class='sector-sub'>Leader: <b>{row.get('Leader', '-')}</b></div>"
+            f"</div>"
+        )
+    st.markdown(
+        """
+        <style>
+          .sector-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 4px 2px 14px 2px;
+          }
+          .sector-card {
+            flex: 0 0 230px;
+            min-height: 142px;
+            border: 1px solid;
+            border-radius: 8px;
+            padding: 14px;
+            background: rgba(255,255,255,0.035);
+          }
+          .sector-rank {
+            color: rgba(255,255,255,0.62);
+            font-size: 0.88rem;
+            font-weight: 700;
+          }
+          .sector-name {
+            color: white;
+            font-size: 1.08rem;
+            line-height: 1.2;
+            font-weight: 750;
+            min-height: 42px;
+            margin-top: 5px;
+          }
+          .sector-score {
+            color: white;
+            font-size: 2rem;
+            line-height: 1.1;
+            font-weight: 800;
+            margin-top: 8px;
+          }
+          .sector-sub {
+            color: rgba(255,255,255,0.72);
+            font-size: 0.84rem;
+            margin-top: 6px;
+            white-space: nowrap;
+          }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(f"<div class='sector-row'>{''.join(cards)}</div>", unsafe_allow_html=True)
+
+
+def _format_ranking_table(df: pd.DataFrame) -> pd.DataFrame:
     show = df.copy()
-    for col in ["1W", "1M", "3M", "6M", "Score"]:
+    for col in ["1W", "1M", "3M", "6M"]:
         if col in show:
             show[col] = show[col].map(_pct)
+    if "Score" in show:
+        show["Score"] = show["Score"].map(_score_label)
     if "Price" in show:
         show["Price"] = show["Price"].map(lambda v: f"${float(v):,.2f}" if pd.notna(v) else "-")
-    st.dataframe(show, use_container_width=True, hide_index=True)
+    return show[["Rank", "Ticker", "Company", "Sector", "Score", "Price", "1W", "1M", "3M", "6M"]]
 
 
 def main() -> None:
     st.title("Sector Tracker")
-    st.caption("Unified sector and theme tracker for relative strength, momentum, leading proxies, capex, and margin signals.")
+    st.caption("Single-page sector rotation board. Sectors are ranked left to right by recent composite momentum.")
 
     with st.sidebar:
         st.header("Sector Tracker")
-        selected_sector = st.selectbox("Sector", list(SECTORS.keys()))
         perf_window = st.selectbox("Performance window", [30, 60, 90, 180, 365], index=2, format_func=lambda d: f"{d}D")
-        custom_raw = st.text_input("Add tickers", placeholder="Comma-separated tickers")
-        show_all = st.checkbox("Show sector comparison", value=True)
+        top_n = st.slider("Top stocks", min_value=10, max_value=80, value=30, step=5)
 
     all_tickers: set[str] = {BENCHMARK}
     for sector in SECTORS.values():
         all_tickers.update(sector.tickers)
         all_tickers.update(sector.proxies)
-
-    config = SECTORS[selected_sector]
-    selected_tickers = list(config.tickers)
-    custom_names: dict[str, str] = {}
-    if custom_raw.strip():
-        for ticker in custom_raw.upper().split(","):
-            ticker = ticker.strip()
-            if ticker and ticker not in selected_tickers:
-                selected_tickers.append(ticker)
-                custom_names[ticker] = ticker
-                all_tickers.add(ticker)
 
     with st.spinner("Loading price data..."):
         prices = _load_prices(tuple(sorted(all_tickers)), perf_window + 140)
@@ -342,69 +306,42 @@ def main() -> None:
         st.warning("Price data unavailable. Check network connection or try again later.")
         return
 
-    if show_all:
-        st.subheader("Sector Comparison")
-        summary = _sector_summary(prices, SECTORS)
-        left, right = st.columns([1.2, 1])
-        with left:
-            st.plotly_chart(_summary_bar(summary), use_container_width=True)
-        with right:
-            display = summary.copy()
-            for col in ["1M", "3M", "6M", "Positive 1M"]:
-                display[col] = display[col].map(_pct)
-            st.dataframe(display, use_container_width=True, hide_index=True)
-        st.divider()
+    summary = _sector_summary(prices, SECTORS)
+    rankings = _all_stock_rankings(prices, SECTORS)
 
-    st.subheader(selected_sector)
-    st.caption(config.description)
+    st.subheader("Sector Rotation")
+    _sector_cards(summary)
 
-    c1, c2, c3, c4 = st.columns(4)
-    sector_momentum = _momentum_table(prices, selected_tickers, {**config.tickers, **custom_names})
-    if not sector_momentum.empty:
-        c1.metric("Tracked stocks", f"{len(sector_momentum):,}")
-        c2.metric("Avg 1M", _pct(sector_momentum["1M"].mean()))
-        c3.metric("Avg 3M", _pct(sector_momentum["3M"].mean()))
-        c4.metric("Leader", str(sector_momentum.iloc[0]["Ticker"]))
-
-    st.plotly_chart(_relative_chart(prices, selected_tickers, perf_window), use_container_width=True)
-
-    st.subheader("Momentum Ranking")
-    if sector_momentum.empty:
-        st.info("No momentum data available for this sector.")
-    else:
-        _display_momentum(sector_momentum)
+    left, right = st.columns([1.05, 1])
+    with left:
+        st.plotly_chart(_summary_bar(summary), use_container_width=True)
+    with right:
+        display = summary.copy()
+        for col in ["1M", "3M", "6M", "Positive 1M"]:
+            display[col] = display[col].map(_pct)
+        display["Score"] = display["Score"].map(_score_label)
+        st.dataframe(
+            display[["Sector", "Score", "1M", "3M", "6M", "Positive 1M", "Leader", "Laggard", "Tickers"]],
+            use_container_width=True,
+            hide_index=True,
+        )
 
     st.divider()
 
-    st.subheader("Leading Proxies")
-    st.caption("Proxy tickers are sector-specific indicators that often move before reported fundamentals.")
-    proxy_tickers = list(config.proxies)
-    proxy_momentum = _momentum_table(prices, proxy_tickers, config.proxies)
-    if proxy_momentum.empty:
-        st.info("No proxy price data available.")
+    st.subheader("Recommended Stocks")
+    st.caption("Ranked by composite momentum score: 45% 1M, 35% 3M, 20% 6M.")
+    if rankings.empty:
+        st.info("No stock ranking data available.")
     else:
-        _display_momentum(proxy_momentum)
+        st.dataframe(_format_ranking_table(rankings.head(top_n)), use_container_width=True, hide_index=True)
 
-    revenue_cols = st.columns(min(3, max(1, len(proxy_tickers))))
-    for idx, ticker in enumerate(proxy_tickers[:3]):
-        with revenue_cols[idx % len(revenue_cols)]:
-            with st.spinner(f"Loading {ticker} quarterly data..."):
-                qdf = _load_quarterly(ticker)
-            st.markdown(f"**{ticker}: {config.proxies[ticker]}**")
-            if qdf.empty:
-                st.info("Quarterly data unavailable.")
-            else:
-                st.plotly_chart(_revenue_chart(qdf, ticker), use_container_width=True)
-
-    if selected_sector in {"Optical Communications", "Memory", "Cloud / Hyperscalers"}:
-        st.subheader("Hyperscaler Capex")
-        with st.spinner("Loading hyperscaler capex..."):
-            capex_data = {ticker: _load_quarterly(ticker, quarters=12) for ticker in HYPERSCALERS}
-        valid_capex = {ticker: df for ticker, df in capex_data.items() if not df.empty and "capex_abs" in df}
-        if valid_capex:
-            st.plotly_chart(_capex_chart(valid_capex), use_container_width=True)
-        else:
-            st.info("Hyperscaler capex data unavailable.")
+    st.subheader("Top Stocks by Sector")
+    for sector_name in summary["Sector"].tolist():
+        sector_rows = rankings[rankings["Sector"] == sector_name].head(5)
+        if sector_rows.empty:
+            continue
+        with st.expander(sector_name, expanded=False):
+            st.dataframe(_format_ranking_table(sector_rows), use_container_width=True, hide_index=True)
 
 
 if __name__ == "__main__":
