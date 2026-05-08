@@ -41,7 +41,6 @@ class SectorConfig:
     description: str
     tickers: dict[str, str]
     proxies: dict[str, str]
-    pricing_proxy: str | None
 
 
 SECTORS: dict[str, SectorConfig] = {
@@ -57,56 +56,48 @@ SECTORS: dict[str, SectorConfig] = {
             "MTSI": "MACOM Technology",
         },
         proxies={"NVDA": "AI GPU demand", "ANET": "Data-center switching", "EQIX": "Data-center buildout"},
-        pricing_proxy="COHR",
     ),
     "Memory": SectorConfig(
         name="Memory",
         description="DRAM, NAND, HBM, storage, and AI memory-cycle signals.",
         tickers={"MU": "Micron", "WDC": "Western Digital", "STX": "Seagate", "MRVL": "Marvell"},
         proxies={"NVDA": "AI GPU demand", "AMD": "AI accelerator demand", "LRCX": "Memory equipment cycle"},
-        pricing_proxy="MU",
     ),
     "AI Infrastructure": SectorConfig(
         name="AI Infrastructure",
         description="Accelerators, custom silicon, servers, networking silicon, and AI compute infrastructure.",
         tickers={"NVDA": "NVIDIA", "AMD": "AMD", "AVGO": "Broadcom", "MRVL": "Marvell", "SMCI": "Super Micro", "ARM": "Arm"},
         proxies={"MSFT": "Cloud AI capex", "META": "AI cluster capex", "ANET": "AI networking"},
-        pricing_proxy="NVDA",
     ),
     "Semiconductor Equipment": SectorConfig(
         name="Semiconductor Equipment",
         description="Wafer fab equipment and process-control suppliers tied to semiconductor capacity cycles.",
         tickers={"AMAT": "Applied Materials", "LRCX": "Lam Research", "KLAC": "KLA", "ASML": "ASML", "TER": "Teradyne"},
         proxies={"TSM": "Foundry capex", "MU": "Memory capex", "NVDA": "AI demand pull"},
-        pricing_proxy="AMAT",
     ),
     "Networking Equipment": SectorConfig(
         name="Networking Equipment",
         description="Switching, routing, observability, test equipment, and enterprise/data-center network infrastructure.",
         tickers={"ANET": "Arista Networks", "CSCO": "Cisco", "JNPR": "Juniper", "KEYS": "Keysight"},
         proxies={"NVDA": "AI server demand", "MSFT": "Cloud buildout", "CIEN": "Optical transport"},
-        pricing_proxy="ANET",
     ),
     "Cloud / Hyperscalers": SectorConfig(
         name="Cloud / Hyperscalers",
         description="Cloud platforms and large AI-capex buyers that drive demand for compute, networking, and storage.",
         tickers={"MSFT": "Microsoft", "AMZN": "Amazon", "GOOGL": "Alphabet", "META": "Meta", "ORCL": "Oracle"},
         proxies={"NVDA": "AI compute supplier", "ANET": "Networking supplier", "MU": "Memory supplier"},
-        pricing_proxy="MSFT",
     ),
     "Cybersecurity": SectorConfig(
         name="Cybersecurity",
         description="Security software platforms, cloud security, endpoint, identity, and network security.",
         tickers={"CRWD": "CrowdStrike", "PANW": "Palo Alto Networks", "ZS": "Zscaler", "FTNT": "Fortinet", "OKTA": "Okta"},
         proxies={"MSFT": "Platform security", "NOW": "Enterprise software demand"},
-        pricing_proxy="CRWD",
     ),
     "Financials": SectorConfig(
         name="Financials",
         description="Banks, cards, brokers, and capital-market activity sensitive to credit, rates, and liquidity.",
         tickers={"JPM": "JPMorgan", "BAC": "Bank of America", "GS": "Goldman Sachs", "MS": "Morgan Stanley", "V": "Visa", "MA": "Mastercard"},
         proxies={"SPY": "Risk appetite", "TLT": "Long rates", "KRE": "Regional-bank stress"},
-        pricing_proxy="JPM",
     ),
 }
 
@@ -292,35 +283,6 @@ def _revenue_chart(df: pd.DataFrame, ticker: str) -> go.Figure:
     return fig
 
 
-def _margin_chart(df: pd.DataFrame, ticker: str) -> go.Figure:
-    fig = go.Figure()
-    plot = df.dropna(subset=["gross_margin_pct"]) if "gross_margin_pct" in df else pd.DataFrame()
-    if plot.empty:
-        return fig
-    x = plot["period_end"].dt.to_period("Q").astype(str)
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=plot["gross_margin_pct"],
-        name="Gross Margin %",
-        mode="lines+markers",
-        line=dict(color="#60a5fa", width=2),
-        fill="tozeroy",
-        fillcolor="rgba(96,165,250,0.12)",
-    ))
-    if "operating_margin_pct" in plot:
-        fig.add_trace(go.Scatter(
-            x=x,
-            y=plot["operating_margin_pct"],
-            name="Operating Margin %",
-            mode="lines+markers",
-            line=dict(color="#fb923c", width=1.5, dash="dot"),
-        ))
-    layout = _dark_layout(300)
-    layout["yaxis"] = dict(title="Margin %", gridcolor="#1e2530")
-    fig.update_layout(**layout)
-    return fig
-
-
 def _capex_chart(capex_data: dict[str, pd.DataFrame]) -> go.Figure:
     fig = go.Figure()
     for ticker, df in capex_data.items():
@@ -443,31 +405,6 @@ def main() -> None:
             st.plotly_chart(_capex_chart(valid_capex), use_container_width=True)
         else:
             st.info("Hyperscaler capex data unavailable.")
-
-    if config.pricing_proxy:
-        st.subheader("Margin / Pricing Proxy")
-        st.caption(f"{config.pricing_proxy} gross margin is used as a public proxy for sector pricing and mix.")
-        with st.spinner(f"Loading {config.pricing_proxy} margins..."):
-            proxy_df = _load_quarterly(config.pricing_proxy, quarters=12)
-        if proxy_df.empty or "gross_margin_pct" not in proxy_df:
-            st.info("Margin data unavailable.")
-        else:
-            st.plotly_chart(_margin_chart(proxy_df, config.pricing_proxy), use_container_width=True)
-            plot = proxy_df.dropna(subset=["gross_margin_pct"])
-            if not plot.empty:
-                latest = plot.iloc[-1]
-                prev = plot.iloc[-5] if len(plot) >= 5 else None
-                delta = latest["gross_margin_pct"] - prev["gross_margin_pct"] if prev is not None and pd.notna(prev["gross_margin_pct"]) else np.nan
-                sig = _signal(delta, bull=2.0, bear=-2.0)
-                m1, m2, m3 = st.columns(3)
-                m1.metric("Gross margin", f"{latest['gross_margin_pct']:.1f}%")
-                m2.metric("YoY change", _pct(delta).replace("%", "pp") if pd.notna(delta) else "-")
-                m3.markdown(
-                    f"<div style='padding:7px;border-radius:6px;background:{SIGNAL_COLORS[sig]}22;"
-                    f"border:1px solid {SIGNAL_COLORS[sig]};color:{SIGNAL_COLORS[sig]};"
-                    f"font-weight:700;text-align:center;margin-top:8px'>{sig}</div>",
-                    unsafe_allow_html=True,
-                )
 
 
 if __name__ == "__main__":
