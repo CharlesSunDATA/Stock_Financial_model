@@ -1,7 +1,7 @@
 """Sector Tracker.
 
 Unified theme and sector dashboard for price momentum, relative strength,
-leading proxies, and earnings-call keyword checks.
+leading proxies, capex, and margin signals.
 """
 
 from __future__ import annotations
@@ -42,8 +42,6 @@ class SectorConfig:
     tickers: dict[str, str]
     proxies: dict[str, str]
     pricing_proxy: str | None
-    bullish_keywords: tuple[str, ...]
-    bearish_keywords: tuple[str, ...]
 
 
 SECTORS: dict[str, SectorConfig] = {
@@ -60,8 +58,6 @@ SECTORS: dict[str, SectorConfig] = {
         },
         proxies={"NVDA": "AI GPU demand", "ANET": "Data-center switching", "EQIX": "Data-center buildout"},
         pricing_proxy="COHR",
-        bullish_keywords=("800g", "1.6t", "transceiver", "design win", "hyperscaler", "ai interconnect", "backlog", "ramping"),
-        bearish_keywords=("pushout", "inventory", "pricing pressure", "weak demand", "delay", "softness", "lower guidance"),
     ),
     "Memory": SectorConfig(
         name="Memory",
@@ -69,8 +65,6 @@ SECTORS: dict[str, SectorConfig] = {
         tickers={"MU": "Micron", "WDC": "Western Digital", "STX": "Seagate", "MRVL": "Marvell"},
         proxies={"NVDA": "AI GPU demand", "AMD": "AI accelerator demand", "LRCX": "Memory equipment cycle"},
         pricing_proxy="MU",
-        bullish_keywords=("hbm", "hbm3e", "hbm4", "ddr5", "pricing improvement", "undersupply", "tight supply", "ai memory"),
-        bearish_keywords=("oversupply", "inventory", "asp decline", "pricing pressure", "correction", "weak demand"),
     ),
     "AI Infrastructure": SectorConfig(
         name="AI Infrastructure",
@@ -78,8 +72,6 @@ SECTORS: dict[str, SectorConfig] = {
         tickers={"NVDA": "NVIDIA", "AMD": "AMD", "AVGO": "Broadcom", "MRVL": "Marvell", "SMCI": "Super Micro", "ARM": "Arm"},
         proxies={"MSFT": "Cloud AI capex", "META": "AI cluster capex", "ANET": "AI networking"},
         pricing_proxy="NVDA",
-        bullish_keywords=("ai cluster", "accelerator", "inference", "training", "backlog", "capacity", "gpu", "custom silicon"),
-        bearish_keywords=("supply constraint", "digestion", "inventory", "delay", "margin pressure", "competition"),
     ),
     "Semiconductor Equipment": SectorConfig(
         name="Semiconductor Equipment",
@@ -87,8 +79,6 @@ SECTORS: dict[str, SectorConfig] = {
         tickers={"AMAT": "Applied Materials", "LRCX": "Lam Research", "KLAC": "KLA", "ASML": "ASML", "TER": "Teradyne"},
         proxies={"TSM": "Foundry capex", "MU": "Memory capex", "NVDA": "AI demand pull"},
         pricing_proxy="AMAT",
-        bullish_keywords=("bookings", "backlog", "gate-all-around", "advanced packaging", "high bandwidth memory", "capacity expansion"),
-        bearish_keywords=("export controls", "capacity digestion", "pushout", "utilization", "weak memory", "china restrictions"),
     ),
     "Networking Equipment": SectorConfig(
         name="Networking Equipment",
@@ -96,8 +86,6 @@ SECTORS: dict[str, SectorConfig] = {
         tickers={"ANET": "Arista Networks", "CSCO": "Cisco", "JNPR": "Juniper", "KEYS": "Keysight"},
         proxies={"NVDA": "AI server demand", "MSFT": "Cloud buildout", "CIEN": "Optical transport"},
         pricing_proxy="ANET",
-        bullish_keywords=("ethernet", "backlog", "cloud titan", "ai networking", "400g", "800g", "campus refresh"),
-        bearish_keywords=("inventory correction", "enterprise weakness", "digestion", "order decline", "pricing pressure"),
     ),
     "Cloud / Hyperscalers": SectorConfig(
         name="Cloud / Hyperscalers",
@@ -105,8 +93,6 @@ SECTORS: dict[str, SectorConfig] = {
         tickers={"MSFT": "Microsoft", "AMZN": "Amazon", "GOOGL": "Alphabet", "META": "Meta", "ORCL": "Oracle"},
         proxies={"NVDA": "AI compute supplier", "ANET": "Networking supplier", "MU": "Memory supplier"},
         pricing_proxy="MSFT",
-        bullish_keywords=("capex", "ai infrastructure", "cloud growth", "backlog", "data center", "accelerating demand"),
-        bearish_keywords=("optimization", "deceleration", "margin pressure", "capacity constraint", "regulatory", "spending discipline"),
     ),
     "Cybersecurity": SectorConfig(
         name="Cybersecurity",
@@ -114,8 +100,6 @@ SECTORS: dict[str, SectorConfig] = {
         tickers={"CRWD": "CrowdStrike", "PANW": "Palo Alto Networks", "ZS": "Zscaler", "FTNT": "Fortinet", "OKTA": "Okta"},
         proxies={"MSFT": "Platform security", "NOW": "Enterprise software demand"},
         pricing_proxy="CRWD",
-        bullish_keywords=("platformization", "cloud security", "endpoint", "identity", "net retention", "pipeline", "large deals"),
-        bearish_keywords=("elongated sales cycle", "budget scrutiny", "seat contraction", "competition", "billings slowdown"),
     ),
     "Financials": SectorConfig(
         name="Financials",
@@ -123,8 +107,6 @@ SECTORS: dict[str, SectorConfig] = {
         tickers={"JPM": "JPMorgan", "BAC": "Bank of America", "GS": "Goldman Sachs", "MS": "Morgan Stanley", "V": "Visa", "MA": "Mastercard"},
         proxies={"SPY": "Risk appetite", "TLT": "Long rates", "KRE": "Regional-bank stress"},
         pricing_proxy="JPM",
-        bullish_keywords=("net interest income", "capital markets", "loan growth", "credit quality", "buyback", "transaction growth"),
-        bearish_keywords=("charge-offs", "credit deterioration", "deposit pressure", "commercial real estate", "provision build"),
     ),
 }
 
@@ -354,15 +336,6 @@ def _capex_chart(capex_data: dict[str, pd.DataFrame]) -> go.Figure:
     return fig
 
 
-def _scan_keywords(text: str, config: SectorConfig) -> dict[str, object]:
-    lower = text.lower()
-    bull_hits = [word for word in config.bullish_keywords if word in lower]
-    bear_hits = [word for word in config.bearish_keywords if word in lower]
-    score = len(bull_hits) - len(bear_hits)
-    signal = "Bullish" if score > 1 else ("Bearish" if score < -1 else "Neutral")
-    return {"bull_hits": bull_hits, "bear_hits": bear_hits, "score": score, "signal": signal}
-
-
 def _display_momentum(df: pd.DataFrame) -> None:
     show = df.copy()
     for col in ["1W", "1M", "3M", "6M", "Score"]:
@@ -375,7 +348,7 @@ def _display_momentum(df: pd.DataFrame) -> None:
 
 def main() -> None:
     st.title("Sector Tracker")
-    st.caption("Unified sector and theme tracker for relative strength, momentum, leading proxies, and earnings-call signals.")
+    st.caption("Unified sector and theme tracker for relative strength, momentum, leading proxies, capex, and margin signals.")
 
     with st.sidebar:
         st.header("Sector Tracker")
@@ -495,36 +468,6 @@ def main() -> None:
                     f"font-weight:700;text-align:center;margin-top:8px'>{sig}</div>",
                     unsafe_allow_html=True,
                 )
-
-    st.divider()
-
-    st.subheader("Earnings Call Keyword Scanner")
-    transcript = st.text_area(
-        "Paste earnings call or press release text",
-        height=150,
-        placeholder=f"Paste {selected_sector} earnings-call text here...",
-    )
-    if transcript.strip():
-        result = _scan_keywords(transcript, config)
-        sig = result["signal"]
-        k1, k2, k3, k4 = st.columns(4)
-        k1.metric("Bullish hits", len(result["bull_hits"]))
-        k2.metric("Bearish hits", len(result["bear_hits"]))
-        k3.metric("Net score", result["score"])
-        k4.markdown(
-            f"<div style='padding:7px;border-radius:6px;background:{SIGNAL_COLORS[sig]}22;"
-            f"border:1px solid {SIGNAL_COLORS[sig]};color:{SIGNAL_COLORS[sig]};"
-            f"font-weight:700;text-align:center;margin-top:8px'>{sig}</div>",
-            unsafe_allow_html=True,
-        )
-        with st.expander("Matched keywords", expanded=True):
-            left, right = st.columns(2)
-            with left:
-                st.markdown("**Bullish**")
-                st.write(", ".join(result["bull_hits"]) or "-")
-            with right:
-                st.markdown("**Bearish**")
-                st.write(", ".join(result["bear_hits"]) or "-")
 
 
 if __name__ == "__main__":
