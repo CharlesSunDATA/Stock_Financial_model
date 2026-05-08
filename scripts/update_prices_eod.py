@@ -140,39 +140,77 @@ def _update_per_symbol(
     start: date,
     end: date,
     batch_size: int,
+    universe: str,
+    max_retries: int,
 ) -> int:
-    tickers = [
-        str(r[0]).upper()
-        for r in conn.execute(
-            """
+    if universe == "profile":
+        query = """
+            SELECT p.ticker
+            FROM prices_eod p
+            JOIN company_profile cp ON cp.ticker = p.ticker
+            WHERE cp.company_name IS NOT NULL
+              AND cp.sector IS NOT NULL
+              AND length(p.ticker) <= 5
+              AND p.ticker NOT LIKE '%.%'
+              AND p.ticker NOT LIKE '%-%'
+            GROUP BY p.ticker
+            HAVING MAX(p.price_date) < ?
+            ORDER BY p.ticker
+        """
+        params = (end.isoformat(),)
+    elif universe == "watchlist":
+        query = """
+            SELECT p.ticker
+            FROM prices_eod p
+            JOIN fmp_watchlist w ON w.ticker = p.ticker
+            GROUP BY p.ticker
+            HAVING MAX(p.price_date) < ?
+            ORDER BY p.ticker
+        """
+        params = (end.isoformat(),)
+    else:
+        query = """
             SELECT ticker
             FROM prices_eod
             GROUP BY ticker
             HAVING MAX(price_date) < ?
             ORDER BY ticker
-            """,
-            (end.isoformat(),),
-        ).fetchall()
-        if r and r[0]
-    ]
+        """
+        params = (end.isoformat(),)
+
+    tickers = [str(r[0]).upper() for r in conn.execute(query, params).fetchall() if r and r[0]]
     if batch_size > 0:
         tickers = tickers[:batch_size]
 
-    print(f"per-symbol update: tickers={len(tickers):,}, range={start.isoformat()}->{end.isoformat()}")
+    print(f"per-symbol update: universe={universe}, tickers={len(tickers):,}, range={start.isoformat()}->{end.isoformat()}")
     total = 0
+    failed: list[str] = []
     for i, ticker in enumerate(tickers, start=1):
-        print(f"[{i}/{len(tickers)}] {ticker}: fetching historical-price-eod/full...")
-        rows = fetch_historical_price_eod_full(
-            client,
-            symbol=ticker,
-            date_from=start.isoformat(),
-            date_to=end.isoformat(),
-        )
+        rows: list[dict[str, Any]] = []
+        for attempt in range(1, max(1, max_retries) + 1):
+            try:
+                print(f"[{i}/{len(tickers)}] {ticker}: fetching historical-price-eod/full... attempt={attempt}", flush=True)
+                rows = fetch_historical_price_eod_full(
+                    client,
+                    symbol=ticker,
+                    date_from=start.isoformat(),
+                    date_to=end.isoformat(),
+                )
+                break
+            except requests.RequestException as e:
+                print(f"[{i}/{len(tickers)}] {ticker}: request failed ({type(e).__name__}): {e}", flush=True)
+                if attempt >= max(1, max_retries):
+                    failed.append(ticker)
+                    rows = []
+                else:
+                    time.sleep(min(10, attempt * 2))
         n_rows = _upsert_symbol_rows(conn, ticker=ticker, rows=rows)
         conn.commit()
         total += n_rows
-        print(f"[{i}/{len(tickers)}] {ticker}: upserted={n_rows:,}")
+        print(f"[{i}/{len(tickers)}] {ticker}: upserted={n_rows:,}", flush=True)
         time.sleep(0.05)
+    if failed:
+        print(f"per-symbol update: failed tickers={len(failed):,}: {', '.join(failed[:50])}", flush=True)
     return total
 
 
@@ -184,6 +222,8 @@ def main() -> None:
     ap.add_argument("--to", dest="date_to", default="", help="Explicit end date YYYY-MM-DD. Default: yesterday.")
     ap.add_argument("--calls-per-minute", type=int, default=280)
     ap.add_argument("--batch-size", type=int, default=0, help="Per-symbol mode only. 0 means all lagging tickers.")
+    ap.add_argument("--universe", choices=["all", "profile", "watchlist"], default="all", help="Per-symbol ticker universe.")
+    ap.add_argument("--max-retries", type=int, default=3, help="Per-symbol request retries before skipping a ticker.")
     ap.add_argument("--no-skip-completed", action="store_true", help="Bulk mode only.")
     args = ap.parse_args()
 
@@ -223,6 +263,8 @@ def main() -> None:
                     start=start,
                     end=end,
                     batch_size=max(0, int(args.batch_size)),
+                    universe=str(args.universe),
+                    max_retries=max(1, int(args.max_retries)),
                 )
         except requests.HTTPError as e:
             if args.mode == "bulk":
