@@ -19,6 +19,8 @@ Pages:
 - Portfolio Watchlist Dashboard (combined score, risk, momentum, targets, earnings)
 - Optical Communications Sector Tracker (leading indicators: hyperscaler capex, momentum)
 - Memory Industry Sector Tracker (HBM demand, hyperscaler capex, equipment proxy, DRAM pricing)
+- AI Data Center Research (imported NVDA report and supply-chain workbook)
+- Supply Chain Explorer (interactive upstream/downstream/peer navigator for tech companies)
 """
 
 from __future__ import annotations
@@ -48,8 +50,7 @@ st.markdown(
 pg = st.navigation(
     [
         st.Page("pages/0_Dashboard.py",          title="Market Overview",       icon="📊", default=True),
-        st.Page("pages/1_Stock_valuation.py",     title="Stock Valuation",       icon="💹"),
-        st.Page("pages/2_Quarterly_financials.py", title="Quarterly Financials",  icon="📋"),
+        st.Page("pages/1_Stock_Analysis.py",       title="Stock Analysis",        icon="💹"),
         st.Page("pages/3_Markowitz_opt.py",       title="Markowitz Optimization", icon="⚖️"),
         st.Page("pages/4_Technical_backtester.py", title="Technical Backtester",  icon="📈"),
         st.Page("pages/5_Earnings_Call_NLP.py",   title="Earnings Call Analyzer",     icon="🎙️"),
@@ -66,6 +67,8 @@ pg = st.navigation(
         st.Page("pages/15_Portfolio_Watchlist.py", title="Portfolio Watchlist",  icon="🧭"),
         st.Page("pages/16_Optical_Comms.py",       title="Optical Communications", icon="💡"),
         st.Page("pages/17_Memory.py",               title="Memory Industry",        icon="🧠"),
+        st.Page("pages/18_AI_Data_Center_Research.py", title="AI Data Center Research", icon="📁"),
+        st.Page("pages/18_Supply_Chain.py",         title="Supply Chain Explorer",  icon="🔗"),
     ]
 )
 

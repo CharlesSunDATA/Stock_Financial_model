@@ -1,0 +1,567 @@
+{
+  "_meta": {
+    "description": "Curated supply chain relationships for tech/semiconductor/optical/networking companies.",
+    "schema": {
+      "upstream": "Suppliers / component makers / equipment vendors",
+      "downstream": "Customers / OEMs / end-markets",
+      "peers": "Direct competitors / comparable companies"
+    }
+  },
+
+  "NVDA": {
+    "upstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Foundry — manufactures all NVDA chips",          "segment": "Semiconductor Foundry"},
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "EUV lithography systems used at TSMC",           "segment": "Semiconductor Equipment"},
+      {"ticker": "AMAT", "name": "Applied Materials",      "relationship": "CVD/etch equipment at TSMC fabs",               "segment": "Semiconductor Equipment"},
+      {"ticker": "LRCX", "name": "Lam Research",           "relationship": "Etch/deposition equipment at TSMC",            "segment": "Semiconductor Equipment"},
+      {"ticker": "KLAC", "name": "KLA Corp",               "relationship": "Process control & inspection equipment",        "segment": "Semiconductor Equipment"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "800G/1.6T optical transceivers for AI clusters","segment": "Optical Components"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Laser / optical components for data centers",   "segment": "Optical Components"},
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "PCIe switches, custom ASICs for NVLink",        "segment": "Semiconductors"},
+      {"ticker": "SNPS", "name": "Synopsys",               "relationship": "EDA tools for chip design",                    "segment": "EDA / IP"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure AI cloud — largest GPU customer",         "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP / DeepMind AI clusters",                   "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS GPU clusters",                             "segment": "Hyperscaler"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "AI training / Llama model clusters",           "segment": "Hyperscaler"},
+      {"ticker": "TSLA", "name": "Tesla",                  "relationship": "Dojo AI training clusters",                    "segment": "AI / EV"},
+      {"ticker": "SMCI", "name": "Super Micro Computer",   "relationship": "GPU server ODM — packages NVDA systems",       "segment": "Servers / ODM"},
+      {"ticker": "HPE",  "name": "HPE",                    "relationship": "GPU server integrator",                        "segment": "Servers"},
+      {"ticker": "DELL", "name": "Dell Technologies",      "relationship": "PowerEdge GPU server OEM",                     "segment": "Servers / OEM"},
+      {"ticker": "ORCL", "name": "Oracle",                 "relationship": "OCI GPU clusters for AI workloads",            "segment": "Cloud / Enterprise"}
+    ],
+    "peers": ["AMD", "INTC", "QCOM", "MRVL", "AVGO"]
+  },
+
+  "AMD": {
+    "upstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Foundry — CPU, GPU, EPYC chips",               "segment": "Semiconductor Foundry"},
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "EUV lithography at TSMC",                      "segment": "Semiconductor Equipment"},
+      {"ticker": "AMAT", "name": "Applied Materials",      "relationship": "CVD equipment at TSMC fabs",                   "segment": "Semiconductor Equipment"},
+      {"ticker": "SNPS", "name": "Synopsys",               "relationship": "EDA chip design tools",                       "segment": "EDA / IP"},
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "Networking silicon components",                "segment": "Semiconductors"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure MI300X AI accelerator customer",         "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP Instinct MI cloud instances",              "segment": "Hyperscaler"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "MI300X AI training cluster customer",          "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS Pensando DPU / EPYC instances",            "segment": "Hyperscaler"},
+      {"ticker": "DELL", "name": "Dell Technologies",      "relationship": "PowerEdge EPYC server OEM",                   "segment": "Servers / OEM"},
+      {"ticker": "HPE",  "name": "HPE",                    "relationship": "ProLiant EPYC server OEM",                    "segment": "Servers"},
+      {"ticker": "SMCI", "name": "Super Micro Computer",   "relationship": "AMD GPU / EPYC server ODM",                   "segment": "Servers / ODM"}
+    ],
+    "peers": ["NVDA", "INTC", "QCOM", "MRVL", "AVGO"]
+  },
+
+  "INTC": {
+    "upstream": [
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "EUV tools for Intel 18A/20A process",          "segment": "Semiconductor Equipment"},
+      {"ticker": "AMAT", "name": "Applied Materials",      "relationship": "CVD/PVD equipment for Intel fabs",             "segment": "Semiconductor Equipment"},
+      {"ticker": "LRCX", "name": "Lam Research",           "relationship": "Etch/deposition at Intel fabs",               "segment": "Semiconductor Equipment"},
+      {"ticker": "KLAC", "name": "KLA Corp",               "relationship": "Inspection equipment at Intel fabs",          "segment": "Semiconductor Equipment"},
+      {"ticker": "SNPS", "name": "Synopsys",               "relationship": "EDA chip design tools",                       "segment": "EDA / IP"},
+      {"ticker": "CDNS", "name": "Cadence Design",         "relationship": "EDA chip design tools",                       "segment": "EDA / IP"}
+    ],
+    "downstream": [
+      {"ticker": "DELL", "name": "Dell Technologies",      "relationship": "Core/Xeon desktop & server OEM",              "segment": "Servers / OEM"},
+      {"ticker": "HPE",  "name": "HPE",                    "relationship": "Xeon-based server OEM",                       "segment": "Servers"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure Xeon cloud instances",                   "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS Intel-based instances",                   "segment": "Hyperscaler"},
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "Modem chips (Atom) legacy customer",           "segment": "Consumer Electronics"},
+      {"ticker": "SMCI", "name": "Super Micro Computer",   "relationship": "Intel-based server ODM",                      "segment": "Servers / ODM"}
+    ],
+    "peers": ["AMD", "NVDA", "QCOM", "TSM", "AVGO"]
+  },
+
+  "AVGO": {
+    "upstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Foundry for custom ASICs & networking chips",  "segment": "Semiconductor Foundry"},
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "EUV tools at TSMC for AVGO designs",          "segment": "Semiconductor Equipment"},
+      {"ticker": "SNPS", "name": "Synopsys",               "relationship": "EDA tools for ASIC design",                  "segment": "EDA / IP"},
+      {"ticker": "AMAT", "name": "Applied Materials",      "relationship": "Packaging equipment",                         "segment": "Semiconductor Equipment"}
+    ],
+    "downstream": [
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "TPU custom AI ASIC partner — key revenue",    "segment": "Hyperscaler"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "MTIA custom AI ASIC partner",                 "segment": "Hyperscaler"},
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "WiFi / Bluetooth / Touch Controller chips",   "segment": "Consumer Electronics"},
+      {"ticker": "CSCO", "name": "Cisco",                  "relationship": "ASICs for network switches",                  "segment": "Networking"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Maia custom AI ASIC",                         "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "Trainium/Inferentia ASIC partner",            "segment": "Hyperscaler"}
+    ],
+    "peers": ["NVDA", "AMD", "MRVL", "QCOM", "INTC"]
+  },
+
+  "MRVL": {
+    "upstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Foundry for Marvell networking chips",         "segment": "Semiconductor Foundry"},
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "EUV tools at TSMC",                           "segment": "Semiconductor Equipment"},
+      {"ticker": "SNPS", "name": "Synopsys",               "relationship": "EDA tools for custom silicon",                "segment": "EDA / IP"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "Co-packaged optics collaboration",            "segment": "Optical Components"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Optical components for DSPs",                 "segment": "Optical Components"}
+    ],
+    "downstream": [
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "Trainium/Inferentia custom ASIC design",      "segment": "Hyperscaler"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure custom ASIC & DPU",                     "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "Custom cloud ASIC partner",                   "segment": "Hyperscaler"},
+      {"ticker": "CSCO", "name": "Cisco",                  "relationship": "Ethernet switch silicon customer",            "segment": "Networking"},
+      {"ticker": "ANET", "name": "Arista Networks",        "relationship": "Switch ASIC customer",                        "segment": "Networking"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "Custom ASIC for AI inference",                "segment": "Hyperscaler"}
+    ],
+    "peers": ["AVGO", "NVDA", "AMD", "QCOM", "CIEN"]
+  },
+
+  "TSM": {
+    "upstream": [
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "Sole EUV scanner supplier",                   "segment": "Semiconductor Equipment"},
+      {"ticker": "AMAT", "name": "Applied Materials",      "relationship": "CVD/PVD/ALD deposition equipment",            "segment": "Semiconductor Equipment"},
+      {"ticker": "LRCX", "name": "Lam Research",           "relationship": "Etch/deposition systems",                    "segment": "Semiconductor Equipment"},
+      {"ticker": "KLAC", "name": "KLA Corp",               "relationship": "Process control & metrology tools",          "segment": "Semiconductor Equipment"},
+      {"ticker": "TER",  "name": "Teradyne",               "relationship": "Chip test equipment",                        "segment": "Test Equipment"}
+    ],
+    "downstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "Largest customer — AI GPU chips",             "segment": "AI Semiconductors"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "CPU/GPU foundry customer",                    "segment": "Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "Custom ASIC foundry customer",               "segment": "Semiconductors"},
+      {"ticker": "QCOM", "name": "Qualcomm",               "relationship": "Snapdragon chip foundry customer",           "segment": "Mobile Semiconductors"},
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "A-series / M-series SoC — key customer",     "segment": "Consumer Electronics"},
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "Custom ASIC / networking chip customer",      "segment": "Semiconductors"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "Intel Foundry Services customer (18A)",       "segment": "Semiconductors"},
+      {"ticker": "SNPS", "name": "Synopsys",               "relationship": "Design services collaboration",               "segment": "EDA / IP"}
+    ],
+    "peers": ["INTC", "SAMSUNG", "GFS", "UMC"]
+  },
+
+  "ASML": {
+    "upstream": [
+      {"ticker": "ZEISS","name": "Zeiss (private)",        "relationship": "Optical lens & mirror supplier for EUV",      "segment": "Optics"},
+      {"ticker": "AMAT", "name": "Applied Materials",      "relationship": "Competing & complementary equipment",         "segment": "Semiconductor Equipment"},
+      {"ticker": "LRCX", "name": "Lam Research",           "relationship": "Etch system — used alongside ASML scanners", "segment": "Semiconductor Equipment"}
+    ],
+    "downstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Largest EUV customer",                        "segment": "Semiconductor Foundry"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "EUV/High-NA EUV customer",                   "segment": "Semiconductor Foundry"},
+      {"ticker": "SAMSUNG","name": "Samsung (005930.KS)",  "relationship": "EUV customer for memory & logic",            "segment": "Semiconductor Foundry"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "EUV for advanced DRAM",                      "segment": "Memory"},
+      {"ticker": "KLAC", "name": "KLA Corp",               "relationship": "Complementary inspection tools",             "segment": "Semiconductor Equipment"}
+    ],
+    "peers": ["AMAT", "LRCX", "KLAC", "TER", "ONTO"]
+  },
+
+  "AMAT": {
+    "upstream": [],
+    "downstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "CVD/PVD/ALD equipment customer",              "segment": "Semiconductor Foundry"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "Fab equipment customer",                     "segment": "Semiconductor Foundry"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "Memory fab equipment customer",               "segment": "Memory"},
+      {"ticker": "WDC",  "name": "Western Digital",        "relationship": "NAND fab equipment customer",                 "segment": "Memory"},
+      {"ticker": "SAMSUNG","name": "Samsung (005930.KS)",  "relationship": "Fab equipment customer",                     "segment": "Semiconductor Foundry"}
+    ],
+    "peers": ["LRCX", "KLAC", "ASML", "TER", "ONTO"]
+  },
+
+  "LRCX": {
+    "upstream": [],
+    "downstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Etch/deposition customer",                    "segment": "Semiconductor Foundry"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "Etch system customer",                       "segment": "Semiconductor Foundry"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "Memory etch equipment customer",              "segment": "Memory"},
+      {"ticker": "WDC",  "name": "Western Digital",        "relationship": "NAND etch system customer",                   "segment": "Memory"},
+      {"ticker": "SAMSUNG","name": "Samsung (005930.KS)",  "relationship": "Etch system customer",                       "segment": "Semiconductor Foundry"}
+    ],
+    "peers": ["AMAT", "KLAC", "ASML", "TER", "ONTO"]
+  },
+
+  "KLAC": {
+    "upstream": [],
+    "downstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Inspection/metrology customer",               "segment": "Semiconductor Foundry"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "Fab inspection customer",                    "segment": "Semiconductor Foundry"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "Memory process control customer",             "segment": "Memory"},
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "Complementary EUV inspection",               "segment": "Semiconductor Equipment"}
+    ],
+    "peers": ["AMAT", "LRCX", "ASML", "TER", "ONTO"]
+  },
+
+  "MU": {
+    "upstream": [
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "EUV systems for advanced DRAM",               "segment": "Semiconductor Equipment"},
+      {"ticker": "AMAT", "name": "Applied Materials",      "relationship": "CVD/PVD equipment for DRAM/NAND fabs",        "segment": "Semiconductor Equipment"},
+      {"ticker": "LRCX", "name": "Lam Research",           "relationship": "Etch systems for memory fabs",               "segment": "Semiconductor Equipment"},
+      {"ticker": "KLAC", "name": "KLA Corp",               "relationship": "Inspection equipment for memory fabs",       "segment": "Semiconductor Equipment"},
+      {"ticker": "TER",  "name": "Teradyne",               "relationship": "Memory chip test systems",                   "segment": "Test Equipment"}
+    ],
+    "downstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "HBM3e memory for H/B-series GPUs",           "segment": "AI Semiconductors"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "HBM3/HBM4 for MI-series GPUs",               "segment": "Semiconductors"},
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "LPDDR memory for iPhone/Mac",                "segment": "Consumer Electronics"},
+      {"ticker": "QCOM", "name": "Qualcomm",               "relationship": "LPDDR for Snapdragon SoC designs",           "segment": "Mobile Semiconductors"},
+      {"ticker": "SMCI", "name": "Super Micro Computer",   "relationship": "DDR5 / HBM for GPU servers",                 "segment": "Servers / ODM"},
+      {"ticker": "DELL", "name": "Dell Technologies",      "relationship": "DRAM for server builds",                     "segment": "Servers / OEM"}
+    ],
+    "peers": ["WDC", "SAMSUNG", "INTC", "SKH"]
+  },
+
+  "WDC": {
+    "upstream": [
+      {"ticker": "AMAT", "name": "Applied Materials",      "relationship": "CVD/PVD equipment for NAND fabs",            "segment": "Semiconductor Equipment"},
+      {"ticker": "LRCX", "name": "Lam Research",           "relationship": "Etch systems for NAND fabs",                 "segment": "Semiconductor Equipment"},
+      {"ticker": "KLAC", "name": "KLA Corp",               "relationship": "Inspection for NAND fabs",                  "segment": "Semiconductor Equipment"}
+    ],
+    "downstream": [
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "NAND flash for iPhone / SSD",               "segment": "Consumer Electronics"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Enterprise SSD for Azure",                   "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "Enterprise SSD for AWS",                    "segment": "Hyperscaler"},
+      {"ticker": "DELL", "name": "Dell Technologies",      "relationship": "Enterprise storage OEM",                    "segment": "Servers / OEM"},
+      {"ticker": "SMCI", "name": "Super Micro Computer",   "relationship": "NVMe SSD for GPU servers",                  "segment": "Servers / ODM"}
+    ],
+    "peers": ["MU", "SAMSUNG", "KIOXIA", "STX", "SSNC"]
+  },
+
+  "COHR": {
+    "upstream": [
+      {"ticker": "II-VI", "name": "II-VI (merged into COHR)","relationship": "Merged entity — vertical integration",    "segment": "Optical Components"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Competing laser supplier / peer",           "segment": "Optical Components"},
+      {"ticker": "IPGP", "name": "IPG Photonics",          "relationship": "Fiber laser — adjacent competitor",         "segment": "Lasers"}
+    ],
+    "downstream": [
+      {"ticker": "CSCO", "name": "Cisco",                  "relationship": "Optical transceiver customer",              "segment": "Networking"},
+      {"ticker": "ANET", "name": "Arista Networks",        "relationship": "800G transceiver customer",                 "segment": "Networking"},
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "Optical transceiver for NVLink / InfiniBand","segment": "AI Semiconductors"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure data center optical",                 "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP data center optical",                   "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS data center optical",                   "segment": "Hyperscaler"},
+      {"ticker": "CIEN", "name": "Ciena",                  "relationship": "WDM system optical module customer",        "segment": "Optical Networking"},
+      {"ticker": "INFN", "name": "Infinera",               "relationship": "Optical system module customer",            "segment": "Optical Networking"}
+    ],
+    "peers": ["LITE", "AAOI", "FN", "IPGP", "IIVI"]
+  },
+
+  "LITE": {
+    "upstream": [
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "Direct competitor / peer",                  "segment": "Optical Components"},
+      {"ticker": "IPGP", "name": "IPG Photonics",          "relationship": "Fiber laser adjacent competitor",           "segment": "Lasers"}
+    ],
+    "downstream": [
+      {"ticker": "CSCO", "name": "Cisco",                  "relationship": "Optical transceiver customer",              "segment": "Networking"},
+      {"ticker": "JNPR", "name": "Juniper Networks",        "relationship": "Router optical module customer",            "segment": "Networking"},
+      {"ticker": "CIEN", "name": "Ciena",                  "relationship": "WDM optical module customer",               "segment": "Optical Networking"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure data center optical",                 "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP data center optical",                   "segment": "Hyperscaler"},
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "VCSEL / Face ID laser supplier",            "segment": "Consumer Electronics"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "AR/VR laser components customer",           "segment": "Consumer / AR"}
+    ],
+    "peers": ["COHR", "AAOI", "FN", "IPGP", "VIAV"]
+  },
+
+  "AAOI": {
+    "upstream": [
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "Competing transceiver maker / peer",        "segment": "Optical Components"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Competing optical component maker",         "segment": "Optical Components"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure 400G/800G transceiver customer",      "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP data center transceiver customer",      "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS transceiver customer",                  "segment": "Hyperscaler"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "AI cluster transceiver customer",           "segment": "Hyperscaler"},
+      {"ticker": "CSCO", "name": "Cisco",                  "relationship": "Switch / router transceiver customer",      "segment": "Networking"}
+    ],
+    "peers": ["COHR", "LITE", "FN", "IIVI", "VIAV"]
+  },
+
+  "FN": {
+    "upstream": [
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "Component sourcing / peer",                 "segment": "Optical Components"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Competing optical component",               "segment": "Optical Components"}
+    ],
+    "downstream": [
+      {"ticker": "CSCO", "name": "Cisco",                  "relationship": "Major optical transceiver customer",        "segment": "Networking"},
+      {"ticker": "ANET", "name": "Arista Networks",        "relationship": "400G/800G transceiver customer",            "segment": "Networking"},
+      {"ticker": "JNPR", "name": "Juniper Networks",        "relationship": "Router transceiver customer",               "segment": "Networking"},
+      {"ticker": "CIEN", "name": "Ciena",                  "relationship": "WDM platform optical module customer",      "segment": "Optical Networking"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Hyperscaler data center optical",           "segment": "Hyperscaler"}
+    ],
+    "peers": ["COHR", "LITE", "AAOI", "IIVI", "VIAV"]
+  },
+
+  "CSCO": {
+    "upstream": [
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "Switch ASIC silicon supplier",              "segment": "Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "Custom ASIC / StrataXGS switch silicon",    "segment": "Semiconductors"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "Optical transceiver module supplier",       "segment": "Optical Components"},
+      {"ticker": "FN",   "name": "Fabrinet",               "relationship": "Contract manufacturing optical modules",    "segment": "Optical Components"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Optical transceiver supplier",              "segment": "Optical Components"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "Network interface card silicon",            "segment": "Semiconductors"},
+      {"ticker": "QCOM", "name": "Qualcomm",               "relationship": "Wireless chipset supplier",                 "segment": "Mobile Semiconductors"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Enterprise networking / Azure cloud",       "segment": "Hyperscaler / Enterprise"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS networking equipment",                  "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP network infrastructure",                "segment": "Hyperscaler"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "Data center network infrastructure",        "segment": "Hyperscaler"}
+    ],
+    "peers": ["ANET", "JNPR", "HPE", "NTGR", "RDWR"]
+  },
+
+  "ANET": {
+    "upstream": [
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "Ethernet switch ASIC — Prestera/Teralynx", "segment": "Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "Tomahawk/Trident switch silicon",          "segment": "Semiconductors"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "800G optical transceiver supplier",        "segment": "Optical Components"},
+      {"ticker": "FN",   "name": "Fabrinet",               "relationship": "Contract mfg optical modules",             "segment": "Optical Components"},
+      {"ticker": "AAOI", "name": "Applied Optoelectronics","relationship": "400G/800G transceiver supplier",           "segment": "Optical Components"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "NIC / network interface chips",            "segment": "Semiconductors"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure AI cluster networking — top customer","segment": "Hyperscaler"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "AI data center spine/leaf fabric",         "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP hyperscale networking",                "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS data center switching",                "segment": "Hyperscaler"},
+      {"ticker": "ORCL", "name": "Oracle",                 "relationship": "OCI networking customer",                  "segment": "Cloud / Enterprise"}
+    ],
+    "peers": ["CSCO", "JNPR", "HPE", "NVDA", "MRVL"]
+  },
+
+  "CIEN": {
+    "upstream": [
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "WDM optical module supplier",              "segment": "Optical Components"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Coherent WDM module supplier",             "segment": "Optical Components"},
+      {"ticker": "FN",   "name": "Fabrinet",               "relationship": "Contract mfg optical modules",             "segment": "Optical Components"},
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "DSP / coherent modem silicon",             "segment": "Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "Ethernet switch silicon",                  "segment": "Semiconductors"}
+    ],
+    "downstream": [
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "Subsea/long-haul WDM — largest customer",  "segment": "Hyperscaler"},
+      {"ticker": "AT&T", "name": "AT&T (T)",               "relationship": "Carrier WDM transport customer",           "segment": "Telecom"},
+      {"ticker": "VZ",   "name": "Verizon",                "relationship": "Carrier WDM transport customer",           "segment": "Telecom"},
+      {"ticker": "TMUS", "name": "T-Mobile",               "relationship": "Carrier optical transport",               "segment": "Telecom"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure subsea / metro WDM",                 "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS subsea WDM customer",                  "segment": "Hyperscaler"}
+    ],
+    "peers": ["INFN", "ADTN", "CALX", "LITE", "COHR"]
+  },
+
+  "MSFT": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "Azure AI GPU supplier — H100/H200/B200",   "segment": "AI Semiconductors"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "Azure MI300X GPU & EPYC CPU supplier",     "segment": "Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "Maia custom AI ASIC partner",              "segment": "Semiconductors"},
+      {"ticker": "ANET", "name": "Arista Networks",        "relationship": "Azure AI cluster networking supplier",     "segment": "Networking"},
+      {"ticker": "CSCO", "name": "Cisco",                  "relationship": "Enterprise network equipment",             "segment": "Networking"},
+      {"ticker": "DELL", "name": "Dell Technologies",      "relationship": "Azure server hardware OEM",               "segment": "Servers / OEM"},
+      {"ticker": "SMCI", "name": "Super Micro Computer",   "relationship": "Azure GPU server ODM",                    "segment": "Servers / ODM"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "Azure data center optical transceivers",   "segment": "Optical Components"}
+    ],
+    "downstream": [
+      {"ticker": "ORCL", "name": "Oracle",                 "relationship": "Runs on Azure (OCI / Azure partnership)",  "segment": "Cloud / Enterprise"},
+      {"ticker": "ADBE", "name": "Adobe",                  "relationship": "Creative Cloud / Office integration",      "segment": "Software"}
+    ],
+    "peers": ["GOOGL", "AMZN", "META", "ORCL", "CRM"]
+  },
+
+  "GOOGL": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "GCP GPU supplier (A100/H100)",             "segment": "AI Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "TPU v5 custom ASIC design partner",        "segment": "Semiconductors"},
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "Custom cloud ASIC partner",                "segment": "Semiconductors"},
+      {"ticker": "ANET", "name": "Arista Networks",        "relationship": "GCP data center networking",               "segment": "Networking"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "GCP data center optical",                  "segment": "Optical Components"},
+      {"ticker": "CIEN", "name": "Ciena",                  "relationship": "Subsea / long-haul WDM",                  "segment": "Optical Networking"},
+      {"ticker": "TSMC", "name": "TSMC (TSM)",             "relationship": "TPU chip foundry",                         "segment": "Semiconductor Foundry"}
+    ],
+    "downstream": [],
+    "peers": ["MSFT", "AMZN", "META", "ORCL", "CRM"]
+  },
+
+  "AMZN": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "AWS GPU supplier (A100/H100/GB200)",       "segment": "AI Semiconductors"},
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "Trainium/Inferentia custom ASIC",          "segment": "Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "Custom ASIC / networking chips for AWS",   "segment": "Semiconductors"},
+      {"ticker": "ANET", "name": "Arista Networks",        "relationship": "AWS data center networking",               "segment": "Networking"},
+      {"ticker": "CSCO", "name": "Cisco",                  "relationship": "AWS network infrastructure",               "segment": "Networking"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "AWS data center optical transceivers",     "segment": "Optical Components"},
+      {"ticker": "DELL", "name": "Dell Technologies",      "relationship": "AWS server hardware",                     "segment": "Servers / OEM"}
+    ],
+    "downstream": [],
+    "peers": ["MSFT", "GOOGL", "META", "ORCL", "CRM"]
+  },
+
+  "META": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "AI training cluster GPU supplier",         "segment": "AI Semiconductors"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "MI300X GPU for AI training",               "segment": "Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "MTIA custom AI ASIC design partner",      "segment": "Semiconductors"},
+      {"ticker": "ANET", "name": "Arista Networks",        "relationship": "AI cluster network fabric supplier",       "segment": "Networking"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "Data center optical transceiver",          "segment": "Optical Components"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "AR/VR laser / VCSEL supplier",            "segment": "Optical Components"},
+      {"ticker": "SMCI", "name": "Super Micro Computer",   "relationship": "GPU server ODM supplier",                  "segment": "Servers / ODM"}
+    ],
+    "downstream": [],
+    "peers": ["GOOGL", "MSFT", "SNAP", "PINS", "TWTR"]
+  },
+
+  "SMCI": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "GPU component supplier — core product",    "segment": "AI Semiconductors"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "GPU / EPYC CPU component supplier",        "segment": "Semiconductors"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "Xeon CPU for non-GPU servers",            "segment": "Semiconductors"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "DDR5 / HBM memory supplier",              "segment": "Memory"},
+      {"ticker": "WDC",  "name": "Western Digital",        "relationship": "NVMe SSD supplier",                       "segment": "Memory"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure GPU server customer",               "segment": "Hyperscaler"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "AI cluster server customer",             "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP AI server customer",                  "segment": "Hyperscaler"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS AI server customer",                  "segment": "Hyperscaler"},
+      {"ticker": "TSLA", "name": "Tesla",                  "relationship": "Dojo supercomputer server customer",      "segment": "AI / EV"}
+    ],
+    "peers": ["DELL", "HPE", "LNVGY", "NTAP", "PSTG"]
+  },
+
+  "AAPL": {
+    "upstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "A-series / M-series SoC foundry",         "segment": "Semiconductor Foundry"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "WiFi / Bluetooth / Touch Controller chips","segment": "Semiconductors"},
+      {"ticker": "QCOM", "name": "Qualcomm",               "relationship": "5G modem (transitioning to in-house)",    "segment": "Mobile Semiconductors"},
+      {"ticker": "WDC",  "name": "Western Digital",        "relationship": "NAND flash supplier",                    "segment": "Memory"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "LPDDR memory supplier",                  "segment": "Memory"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Face ID VCSEL laser supplier",           "segment": "Optical Components"},
+      {"ticker": "SNPS", "name": "Synopsys",               "relationship": "EDA tools for Apple Silicon design",     "segment": "EDA / IP"}
+    ],
+    "downstream": [],
+    "peers": ["MSFT", "GOOGL", "META", "SAMSUNG", "DELL"]
+  },
+
+  "QCOM": {
+    "upstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Foundry for Snapdragon SoC",              "segment": "Semiconductor Foundry"},
+      {"ticker": "ASML", "name": "ASML",                  "relationship": "EUV tools at TSMC for Snapdragon",        "segment": "Semiconductor Equipment"},
+      {"ticker": "SNPS", "name": "Synopsys",               "relationship": "EDA tools for SoC design",               "segment": "EDA / IP"},
+      {"ticker": "CDNS", "name": "Cadence Design",         "relationship": "EDA chip design tools",                  "segment": "EDA / IP"}
+    ],
+    "downstream": [
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "iPhone 5G modem (legacy; transitioning)", "segment": "Consumer Electronics"},
+      {"ticker": "SAMSUNG","name": "Samsung",              "relationship": "Android flagship SoC customer",          "segment": "Consumer Electronics"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Windows on Snapdragon X laptops",        "segment": "PC / Cloud"},
+      {"ticker": "META", "name": "Meta Platforms",         "relationship": "Quest VR Snapdragon XR chip customer",   "segment": "Consumer / AR"}
+    ],
+    "peers": ["MRVL", "AVGO", "INTC", "AMD", "MTSI"]
+  },
+
+  "SNPS": {
+    "upstream": [],
+    "downstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "EDA tools for GPU chip design",          "segment": "AI Semiconductors"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "EDA tools for CPU/GPU design",           "segment": "Semiconductors"},
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "EDA tools for Apple Silicon",            "segment": "Consumer Electronics"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "EDA tools for Intel chip design",        "segment": "Semiconductors"},
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Design rules / IP partnership",           "segment": "Semiconductor Foundry"},
+      {"ticker": "QCOM", "name": "Qualcomm",               "relationship": "EDA tools for Snapdragon design",        "segment": "Mobile Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "EDA tools for ASIC design",             "segment": "Semiconductors"}
+    ],
+    "peers": ["CDNS", "ANSYS", "SIEMENS", "MENTOR"]
+  },
+
+  "CDNS": {
+    "upstream": [],
+    "downstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "EDA tools for GPU design",               "segment": "AI Semiconductors"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "EDA tools for chip design",              "segment": "Semiconductors"},
+      {"ticker": "QCOM", "name": "Qualcomm",               "relationship": "EDA tools for Snapdragon",               "segment": "Mobile Semiconductors"},
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "EDA tools for Apple Silicon",            "segment": "Consumer Electronics"}
+    ],
+    "peers": ["SNPS", "ANSYS", "SIEMENS", "MENTOR"]
+  },
+
+  "DELL": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "GPU component for PowerEdge AI servers",  "segment": "AI Semiconductors"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "EPYC CPU for PowerEdge servers",         "segment": "Semiconductors"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "Xeon CPU for PowerEdge / client PCs",   "segment": "Semiconductors"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "Memory / DRAM for servers",              "segment": "Memory"},
+      {"ticker": "WDC",  "name": "Western Digital",        "relationship": "SSD / HDD storage",                     "segment": "Memory / Storage"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Enterprise server & client buyer",       "segment": "Hyperscaler / Enterprise"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS server hardware buyer",              "segment": "Hyperscaler"},
+      {"ticker": "GOOGL","name": "Alphabet",               "relationship": "GCP server hardware buyer",              "segment": "Hyperscaler"}
+    ],
+    "peers": ["HPE", "SMCI", "LNVGY", "IBM", "NTAP"]
+  },
+
+  "HPE": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "GPU for HPE Cray / ProLiant AI servers",  "segment": "AI Semiconductors"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "EPYC CPU for ProLiant servers",          "segment": "Semiconductors"},
+      {"ticker": "INTC", "name": "Intel",                  "relationship": "Xeon CPU for enterprise servers",        "segment": "Semiconductors"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "Memory / DRAM for servers",              "segment": "Memory"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Enterprise server buyer",                "segment": "Enterprise"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "AWS server buyer",                       "segment": "Hyperscaler"}
+    ],
+    "peers": ["DELL", "SMCI", "IBM", "NTAP", "PSTG"]
+  },
+
+  "JNPR": {
+    "upstream": [
+      {"ticker": "MRVL", "name": "Marvell Technology",     "relationship": "Switch ASIC silicon supplier",           "segment": "Semiconductors"},
+      {"ticker": "AVGO", "name": "Broadcom",               "relationship": "Network switch silicon",                 "segment": "Semiconductors"},
+      {"ticker": "COHR", "name": "Coherent",               "relationship": "Optical transceiver modules",            "segment": "Optical Components"},
+      {"ticker": "FN",   "name": "Fabrinet",               "relationship": "Contract mfg optical modules",           "segment": "Optical Components"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure enterprise network infrastructure","segment": "Hyperscaler / Enterprise"},
+      {"ticker": "AT&T", "name": "AT&T (T)",               "relationship": "Carrier routing / switching customer",   "segment": "Telecom"},
+      {"ticker": "VZ",   "name": "Verizon",                "relationship": "Carrier routing customer",               "segment": "Telecom"}
+    ],
+    "peers": ["CSCO", "ANET", "HPE", "RDWR", "CALX"]
+  },
+
+  "IPGP": {
+    "upstream": [],
+    "downstream": [
+      {"ticker": "TSLA", "name": "Tesla",                  "relationship": "EV battery welding laser customer",      "segment": "EV / Automotive"},
+      {"ticker": "AAPL", "name": "Apple",                  "relationship": "Precision cutting / manufacturing laser","segment": "Consumer Electronics"},
+      {"ticker": "AMD",  "name": "AMD",                    "relationship": "Semiconductor cutting / scribing",       "segment": "Semiconductors"}
+    ],
+    "peers": ["LITE", "COHR", "IIVI", "VIAV", "FNSR"]
+  },
+
+  "TER": {
+    "upstream": [],
+    "downstream": [
+      {"ticker": "TSM",  "name": "TSMC",                  "relationship": "Chip test equipment customer",           "segment": "Semiconductor Foundry"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "Memory test equipment customer",         "segment": "Memory"},
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "GPU test equipment customer",            "segment": "AI Semiconductors"},
+      {"ticker": "QCOM", "name": "Qualcomm",               "relationship": "Mobile SoC test customer",              "segment": "Mobile Semiconductors"}
+    ],
+    "peers": ["AMAT", "KLAC", "LRCX", "ASML", "COHU"]
+  },
+
+  "ORCL": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "OCI GPU cluster AI supplier",           "segment": "AI Semiconductors"},
+      {"ticker": "ANET", "name": "Arista Networks",        "relationship": "OCI networking infrastructure",         "segment": "Networking"},
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Azure / Microsoft partnership",         "segment": "Cloud"}
+    ],
+    "downstream": [
+      {"ticker": "MSFT", "name": "Microsoft",              "relationship": "Microsoft 365 / Teams uses Oracle DB",  "segment": "Software"},
+      {"ticker": "AMZN", "name": "Amazon",                 "relationship": "Enterprise DB customer on AWS",         "segment": "Hyperscaler"}
+    ],
+    "peers": ["MSFT", "SAP", "IBM", "ADBE", "CRM"]
+  },
+
+  "TSLA": {
+    "upstream": [
+      {"ticker": "NVDA", "name": "NVIDIA",                 "relationship": "Dojo AI training GPU cluster",         "segment": "AI Semiconductors"},
+      {"ticker": "PANASONIC","name": "Panasonic",          "relationship": "2170 battery cell supplier (Gigafactory)","segment": "Battery"},
+      {"ticker": "MU",   "name": "Micron Technology",      "relationship": "DRAM / memory for in-car computers",   "segment": "Memory"},
+      {"ticker": "LITE", "name": "Lumentum",               "relationship": "Lidar / laser sensors",                "segment": "Optical Components"},
+      {"ticker": "SMCI", "name": "Super Micro Computer",   "relationship": "Dojo supercomputer server ODM",        "segment": "Servers / ODM"}
+    ],
+    "downstream": [],
+    "peers": ["F", "GM", "RIVN", "LCID", "NIO", "LI"]
+  }
+}
