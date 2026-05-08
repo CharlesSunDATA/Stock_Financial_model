@@ -57,8 +57,7 @@ pg = st.navigation(
         st.Page("pages/10_Ranking_Suite.py",      title="Ranking Suite",         icon="🏭"),
         st.Page("pages/14_Smart_Money.py",        title="Smart Money",           icon="🏦"),
         st.Page("pages/15_Portfolio_Watchlist.py", title="Portfolio Watchlist",  icon="🧭"),
-        st.Page("pages/16_Optical_Comms.py",       title="Optical Communications", icon="💡"),
-        st.Page("pages/17_Memory.py",               title="Memory Industry",        icon="🧠"),
+        st.Page("pages/16_Sector_Tracker.py",       title="Sector Tracker",        icon="💡"),
         st.Page("pages/18_Supply_Chain.py",         title="Supply Chain Explorer",  icon="🔗"),
     ]
 )
