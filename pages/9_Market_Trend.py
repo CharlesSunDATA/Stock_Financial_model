@@ -100,6 +100,22 @@ def _fmt_ret(v) -> str:
         return "-"
 
 
+def _date_metric(label: str, value: str) -> None:
+    st.markdown(
+        f"""
+        <div style="padding-top:0.15rem">
+          <div style="font-size:0.95rem;font-weight:600;color:rgba(255,255,255,0.88);">
+            {label}
+          </div>
+          <div style="font-size:2.15rem;line-height:1.2;color:white;white-space:nowrap;">
+            {value}
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 # ── Data loading ──────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=60 * 10, show_spinner=False)
@@ -583,8 +599,9 @@ def main() -> None:
 
     getattr(st, regime.tone)(f"**{regime.label}** — {regime.score:+d} points")
 
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
-    c1.metric("Data date",       latest_date)
+    c1, c2, c3, c4, c5, c6 = st.columns([1.25, 1, 1, 1, 1, 1])
+    with c1:
+        _date_metric("Data date", latest_date)
     c2.metric("Stocks analyzed", f"{len(latest):,}")
     c3.metric("Above 20MA",      _pct(latest["above_20ma"].mean() * 100) if "above_20ma" in latest.columns else "—")
     c4.metric("Above 50MA",      _pct(latest["above_50ma"].mean() * 100))
