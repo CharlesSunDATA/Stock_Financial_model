@@ -32,6 +32,7 @@ except ModuleNotFoundError:
 
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "quant_data.db"
 PRICE_LOOKBACK_DAYS = 560
+RECENT_PRICE_WINDOW_DAYS = 14
 UPDATE_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "update_prices_eod.py"
 
 # ── Theme map: theme name → representative tickers ────────────────────────────
@@ -114,6 +115,7 @@ def _load_market_frame(lookback_days: int = PRICE_LOOKBACK_DAYS) -> tuple[pd.Dat
         return pd.DataFrame(), pd.DataFrame()
 
     start = (pd.to_datetime(latest).date() - timedelta(days=lookback_days)).isoformat()
+    recent_cutoff = (pd.to_datetime(latest).date() - timedelta(days=RECENT_PRICE_WINDOW_DAYS)).isoformat()
     with _connect() as conn:
         universe = pd.read_sql(
             """
@@ -135,14 +137,14 @@ def _load_market_frame(lookback_days: int = PRICE_LOOKBACK_DAYS) -> tuple[pd.Dat
             FROM latest_rows lr
             LEFT JOIN company_profile cp ON cp.ticker = lr.ticker
             LEFT JOIN mcap ON mcap.ticker = lr.ticker
-            WHERE lr.latest_price_date = ?
+            WHERE lr.latest_price_date >= ?
               AND cp.company_name IS NOT NULL
               AND cp.sector IS NOT NULL
               AND length(lr.ticker) <= 5
               AND lr.ticker NOT LIKE '%.%'
               AND lr.ticker NOT LIKE '%-%'
             """,
-            conn, params=(latest,),
+            conn, params=(recent_cutoff,),
         )
 
         tickers = universe["ticker"].dropna().astype(str).tolist()
@@ -458,14 +460,15 @@ def _theme_bar_chart(theme_df: pd.DataFrame):
         textposition="outside",
         hovertemplate="%{y}: %{x:+.1f}%<extra></extra>",
     ))
-    fig.update_layout(**_plot_base(max(280, len(df) * 38)),
+    layout = _plot_base(max(280, len(df) * 38))
+    layout["margin"] = dict(l=10, r=70, t=48, b=10)
+    layout["legend"] = dict(visible=False)
+    fig.update_layout(**layout,
                       title=dict(text="Theme momentum — avg 1-month return", font=dict(size=13), x=0),
-                      margin=dict(l=10, r=70, t=48, b=10),
                       xaxis=dict(ticksuffix="%", zeroline=True,
                                  zerolinecolor="rgba(255,255,255,0.3)",
                                  gridcolor="rgba(255,255,255,0.08)"),
-                      yaxis=dict(tickfont=dict(size=12)),
-                      legend=dict(visible=False))
+                      yaxis=dict(tickfont=dict(size=12)))
     return fig
 
 
@@ -511,6 +514,7 @@ def main() -> None:
     st.title("Market Trend Analysis")
     st.caption(
         "Data source: local SQLite `prices_eod`. "
+        f"Coverage includes stocks with recent prices in the last {RECENT_PRICE_WINDOW_DAYS} days. "
         "Index groups are database-derived proxies, not official constituent lists. "
         "Theme rotation uses a hard-coded ticker list — only tickers present in the local DB are included."
     )
