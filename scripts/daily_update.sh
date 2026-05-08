@@ -20,7 +20,10 @@ echo "[1/3] Updating EOD prices..."
 echo "[2/3] Updating calendars..."
 "$PYTHON" -m scripts.update_calendars_fmp
 
-echo "[3/3] Updating news..."
+echo "[3/4] Updating news..."
 "$PYTHON" -m scripts.update_news_fmp
+
+echo "[4/4] Updating Finnhub enrichment..."
+"$PYTHON" -m scripts.update_finnhub --watchlist default --days 14 --batch-size 50
 
 echo "Done."
