@@ -50,6 +50,18 @@ jobs:
       - name: Seed research watchlist
         run: python -m scripts.seed_research_watchlist
 
+      - name: Update EOD prices
+        if: ${{ env.FMP_API_KEY != '' }}
+        run: |
+          python -m scripts.update_prices_eod \
+            --mode per-symbol \
+            --universe watchlist \
+            --days 7 \
+            --calls-per-minute 240 \
+            --max-retries 3 \
+            --fallback-source alpha-vantage \
+            --alpha-calls-per-minute 5
+
       - name: Update event calendars
         if: ${{ env.FMP_API_KEY != '' }}
         run: python -m scripts.update_calendars_fmp --max-age-hours 0 --datasets earnings_calendar,economic_calendar,mergers_acquisitions

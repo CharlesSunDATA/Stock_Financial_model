@@ -23,6 +23,7 @@ except ModuleNotFoundError:
 
 
 TABLES: dict[str, dict[str, str]] = {
+    "prices_eod": {"watermark": "price_date", "label": "EOD prices"},
     "stock_news": {"watermark": "updated_at", "label": "Stock news"},
     "earnings_calendar": {"watermark": "updated_at", "label": "Earnings calendar"},
     "economic_calendar": {"watermark": "updated_at", "label": "Economic calendar"},
@@ -55,7 +56,7 @@ def fetch_rows(
     conn: sqlite3.Connection,
     table: str,
     watermark_column: str,
-    since_iso: str,
+    since_value: str,
 ) -> list[dict[str, Any]]:
     if watermark_column not in table_columns(conn, table):
         return []
@@ -67,7 +68,7 @@ def fetch_rows(
         WHERE {watermark_column} >= ?
         ORDER BY {watermark_column} ASC
         """,
-        (since_iso,),
+        (since_value,),
     ).fetchall()
     return [dict(row) for row in rows]
 
@@ -120,12 +121,15 @@ def export_delta(output_dir: Path, lookback_days: int) -> Path:
     }
 
     since_sql = since.replace(tzinfo=None).isoformat(timespec="seconds")
+    since_date = since.date().isoformat()
 
     with sqlite3.connect(str(db_path)) as conn:
         for table, config in TABLES.items():
             if not table_exists(conn, table):
                 continue
-            rows = fetch_rows(conn, table, config["watermark"], since_sql)
+            watermark = config["watermark"]
+            since_value = since_date if watermark.endswith("_date") else since_sql
+            rows = fetch_rows(conn, table, watermark, since_value)
             csv_file = f"{table}.csv"
             json_file = f"{table}.json"
             write_csv(package_dir / csv_file, rows)

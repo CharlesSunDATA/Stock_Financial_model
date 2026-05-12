@@ -272,16 +272,17 @@ def _update_per_symbol(
               AND p.ticker NOT LIKE '%-%'
             GROUP BY p.ticker
             HAVING MAX(p.price_date) < ?
-            ORDER BY p.ticker
+            ORDER BY w.ticker
         """
         params = (end.isoformat(),)
     elif universe == "watchlist":
         query = """
-            SELECT p.ticker
-            FROM prices_eod p
-            JOIN fmp_watchlist w ON w.ticker = p.ticker
-            GROUP BY p.ticker
-            HAVING MAX(p.price_date) < ?
+            SELECT w.ticker
+            FROM fmp_watchlist w
+            LEFT JOIN prices_eod p ON p.ticker = w.ticker
+            WHERE w.watchlist_name = 'default'
+            GROUP BY w.ticker
+            HAVING MAX(p.price_date) IS NULL OR MAX(p.price_date) < ?
             ORDER BY p.ticker
         """
         params = (end.isoformat(),)
