@@ -18,28 +18,53 @@ except ModuleNotFoundError:
     from init_db import init_db  # type: ignore
 
 
-DEFAULT_TICKERS = [
-    "NVDA",
-    "MSFT",
-    "AAPL",
-    "AMZN",
-    "GOOGL",
-    "META",
-    "TSLA",
-    "AMD",
-    "AVGO",
-    "TSM",
-    "ASML",
-    "SMCI",
-    "ARM",
-    "MU",
-    "MRVL",
-    "ORCL",
-    "CRWD",
-    "PLTR",
-    "SNOW",
-    "PANW",
-]
+RESEARCH_CATEGORIES: dict[str, list[str]] = {
+    "GPU / CPU / ASIC": ["NVDA", "AMD", "INTC", "AVGO", "MRVL", "TSM"],
+    "Memory / HBM / Storage": ["MU", "WDC", "STX", "SSNLF", "HXSCL"],
+    "Optical Communications / Photonics": ["LITE", "COHR", "FN", "AAOI", "CIEN", "GLW", "NOK"],
+    "Connector / Interconnect": ["APH", "TEL", "CRDO", "ALAB"],
+    "AI Server / ODM / EMS": ["DELL", "SMCI", "HPE", "CLS", "JBL", "FLEX", "QUCCF", "WICOF", "HNHPF"],
+    "Networking": ["ANET", "CSCO", "AVGO", "MRVL", "CIEN"],
+    "Power / Cooling / Data Center Equipment": [
+        "VRT",
+        "ETN",
+        "GEV",
+        "PWR",
+        "EME",
+        "FIX",
+        "TT",
+        "CARR",
+        "JCI",
+        "NVT",
+        "BE",
+        "GNRC",
+        "CMI",
+        "CAT",
+    ],
+    "Semiconductor Equipment / Packaging": ["ASML", "AMAT", "LRCX", "KLAC", "TER", "AEHR"],
+    "Cloud Demand Drivers": ["MSFT", "AMZN", "GOOGL", "META", "ORCL"],
+}
+
+
+NAME_TO_TICKER = {
+    "SAMSUNG": "SSNLF",
+    "SAMSUNG ELECTRONICS": "SSNLF",
+    "SK HYNIX": "HXSCL",
+    "QUANTA": "QUCCF",
+    "QUANTA COMPUTER": "QUCCF",
+    "WISTRON": "WICOF",
+    "FOXCONN": "HNHPF",
+    "HON HAI": "HNHPF",
+}
+
+
+def default_tickers() -> list[str]:
+    tickers: list[str] = []
+    for symbols in RESEARCH_CATEGORIES.values():
+        for symbol in symbols:
+            if symbol not in tickers:
+                tickers.append(symbol)
+    return tickers
 
 
 def utc_now_iso() -> str:
@@ -49,7 +74,7 @@ def utc_now_iso() -> str:
 def parse_tickers(raw: str) -> list[str]:
     tickers = []
     for token in raw.replace("\n", ",").split(","):
-        ticker = token.strip().upper()
+        ticker = NAME_TO_TICKER.get(token.strip().upper(), token.strip().upper())
         if ticker and ticker not in tickers:
             tickers.append(ticker)
     return tickers
@@ -81,7 +106,7 @@ def main() -> None:
     parser.add_argument("--watchlist", default="default")
     parser.add_argument(
         "--tickers",
-        default=",".join(DEFAULT_TICKERS),
+        default=",".join(default_tickers()),
         help="Comma-separated tickers to seed.",
     )
     parser.add_argument("--append", action="store_true", help="Append instead of replacing the watchlist.")
