@@ -33,6 +33,7 @@ secrets.toml
 # Local runtime cache and logs
 .cache/
 .logs/
+research_deltas/
 
 # Editor
 .idea/
