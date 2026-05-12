@@ -47,9 +47,12 @@ jobs:
       - name: Initialize database
         run: python scripts/init_db.py
 
+      - name: Seed research watchlist
+        run: python -m scripts.seed_research_watchlist
+
       - name: Update event calendars
         if: ${{ env.FMP_API_KEY != '' }}
-        run: python -m scripts.update_calendars_fmp --max-age-hours 0
+        run: python -m scripts.update_calendars_fmp --max-age-hours 0 --datasets earnings_calendar,economic_calendar,mergers_acquisitions
 
       - name: Update stock news
         if: ${{ env.FMP_API_KEY != '' }}
