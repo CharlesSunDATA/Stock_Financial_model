@@ -66,9 +66,17 @@ jobs:
         if: ${{ env.FMP_API_KEY != '' }}
         run: python -m scripts.update_calendars_fmp --max-age-hours 0 --datasets earnings_calendar,economic_calendar,mergers_acquisitions
 
+      - name: Update financial highlights
+        if: ${{ env.FMP_API_KEY != '' }}
+        run: python -m scripts.update_financial_highlights_fmp --watchlist-name default --limit 8 --calls-per-minute 240
+
       - name: Update stock news
         if: ${{ env.FMP_API_KEY != '' }}
         run: python -m scripts.update_news_fmp --max-age-hours 0 --pages 1
+
+      - name: Update Alpha Vantage news sentiment
+        if: ${{ env.ALPHA_VANTAGE_API_KEY != '' }}
+        run: python -m scripts.update_news_alpha_vantage --watchlist-name default --limit 20 --limit-tickers 25 --calls-per-minute 5
 
       - name: Update macro series
         if: ${{ env.FRED_API_KEY != '' }}

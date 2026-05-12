@@ -25,6 +25,7 @@ except ModuleNotFoundError:
 TABLES: dict[str, dict[str, str]] = {
     "prices_eod": {"watermark": "price_date", "label": "EOD prices"},
     "stock_news": {"watermark": "updated_at", "label": "Stock news"},
+    "stock_financial_highlights": {"watermark": "updated_at", "label": "Stock financial highlights"},
     "earnings_calendar": {"watermark": "updated_at", "label": "Earnings calendar"},
     "economic_calendar": {"watermark": "updated_at", "label": "Economic calendar"},
     "mergers_acquisitions": {"watermark": "updated_at", "label": "Mergers and acquisitions"},
