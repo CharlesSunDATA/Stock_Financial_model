@@ -21,6 +21,8 @@ Pages:
 - Memory Industry Sector Tracker (HBM demand, hyperscaler capex, equipment proxy, DRAM pricing)
 - AI Data Center Research (imported NVDA report and supply-chain workbook)
 - Supply Chain Explorer (interactive upstream/downstream/peer navigator for tech companies)
+- Data Center Equipment Tracker (AI infrastructure equipment and order-signal tracking)
+- Database Maintenance (freshness overview and controlled update runners)
 """
 
 from __future__ import annotations
@@ -55,11 +57,12 @@ pg = st.navigation(
         st.Page("pages/5_Earnings_Hub.py",         title="Earnings Analyst",      icon="📰"),
         st.Page("pages/9_Market_Trend.py",        title="Market Trend",          icon="🌐"),
         st.Page("pages/10_Ranking_Suite.py",      title="Ranking Suite",         icon="🏭"),
-        st.Page("pages/14_Smart_Money.py",        title="Smart Money",           icon="🏦"),
         st.Page("pages/17_Event_Radar.py",        title="Event Radar",           icon="📡"),
-        st.Page("pages/15_Portfolio_Watchlist.py", title="Portfolio Watchlist",  icon="🧭"),
+        st.Page("pages/18_Data_Center_Equipment.py", title="Data Center Equipment", icon="🧱"),
         st.Page("pages/16_Sector_Tracker.py",       title="Sector Tracker",        icon="💡"),
-        st.Page("pages/18_Supply_Chain.py",         title="Supply Chain Explorer",  icon="🔗"),
+        st.Page("pages/19_Macro_Dashboard.py",      title="Macro Dashboard",         icon="🏛️"),
+        st.Page("pages/20_Database_Maintenance.py", title="Database Maintenance",    icon="🛠️"),
+        st.Page("pages/21_Research_Database.py",    title="Research Database",       icon="🗂️"),
     ]
 )
 

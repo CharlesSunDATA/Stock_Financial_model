@@ -1,0 +1,42 @@
+[
+  {
+    "source_id": "src_20260511_001",
+    "ticker": "NVDA",
+    "date": "2026-05-11",
+    "source_name": "NVIDIA Q4 FY2026 results",
+    "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+    "notes": "Imported during initial research database seed."
+  },
+  {
+    "source_id": "src_20260511_002",
+    "ticker": "MU",
+    "date": "2026-05-11",
+    "source_name": "Micron FQ2 FY2026 results",
+    "url": "https://investors.micron.com/news-releases/news-release-details/micron-technology-inc-reports-results-second-quarter-fiscal-2026",
+    "notes": "Imported during initial research database seed."
+  },
+  {
+    "source_id": "src_20260511_003",
+    "ticker": "LITE",
+    "date": "2026-05-11",
+    "source_name": "Lumentum FY2026 Q3 results",
+    "url": "https://investor.lumentum.com/financial-news-releases/news-details/2026/Lumentum-Announces-Third-Quarter-of-Fiscal-Year-2026-Financial-Results/default.aspx",
+    "notes": "Imported during initial research database seed."
+  },
+  {
+    "source_id": "src_20260511_004",
+    "ticker": "DELL",
+    "date": "2026-05-11",
+    "source_name": "Dell FY2026 Q4 and full-year results",
+    "url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~2~dell-technologies-delivers-fourth-quarter-and-full-year-fiscal-2026-results.htm",
+    "notes": "Imported during initial research database seed."
+  },
+  {
+    "source_id": "src_20260511_005",
+    "ticker": "VRT",
+    "date": "2026-05-11",
+    "source_name": "Vertiv Q1 2026 results",
+    "url": "https://investors.vertiv.com/news/news-details/2026/Vertiv-Reports-Strong-First-Quarter-with-Diluted-EPS-Growth-of-136-Adjusted-Diluted-EPS-Growth-of-83-Raises-Full-Year-Guidance/default.aspx",
+    "notes": "Imported during initial research database seed."
+  }
+]

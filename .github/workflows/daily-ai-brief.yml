@@ -1,0 +1,57 @@
+name: Daily AI Data Center Brief
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  daily-brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      RCLONE_CONFIG_GDRIVE: ${{ secrets.RCLONE_CONFIG_GDRIVE }}
+      RESEARCH_LIBRARY_PATH: research
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Generate daily brief
+        run: python scripts/generate_daily_ai_brief.py --research-root "$RESEARCH_LIBRARY_PATH"
+
+      - name: Upload daily brief artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-data-center-daily-brief
+          path: |
+            research/output/daily/
+            research/data/daily_sources/
+          retention-days: 30
+
+      - name: Upload daily brief to Google Drive
+        if: ${{ env.RCLONE_CONFIG_GDRIVE != '' }}
+        run: |
+          curl -O https://downloads.rclone.org/rclone-current-linux-amd64.zip
+          unzip -q rclone-current-linux-amd64.zip
+          sudo cp rclone-*-linux-amd64/rclone /usr/local/bin/
+          mkdir -p ~/.config/rclone
+          printf "%s" "$RCLONE_CONFIG_GDRIVE" > ~/.config/rclone/rclone.conf
+          rclone copy research/output/daily gdrive:Codex/research/output/daily --create-empty-src-dirs
+          rclone copy research/data/daily_sources gdrive:Codex/research/data/daily_sources --create-empty-src-dirs

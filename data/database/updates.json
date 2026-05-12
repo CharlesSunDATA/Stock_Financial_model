@@ -1,0 +1,47 @@
+[
+  {
+    "ticker": "GLW",
+    "date": "2026-05-11",
+    "display_date": "11.May.2026",
+    "type": "Catalyst",
+    "text": "Added Corning to the AI optical and fiber connectivity watchlist.",
+    "display_text": "11.May.2026 Catalyst: Added Corning to the AI optical and fiber connectivity watchlist.",
+    "source_id": ""
+  },
+  {
+    "ticker": "NVDA",
+    "date": "2026-05-11",
+    "display_date": "11.May.2026",
+    "type": "Catalyst",
+    "text": "NVIDIA remains the central AI platform, but the trade is moving toward the next bottlenecks.",
+    "display_text": "11.May.2026 Catalyst: NVIDIA remains the central AI platform, but the trade is moving toward the next bottlenecks.",
+    "source_id": ""
+  },
+  {
+    "ticker": "DELL",
+    "date": "2026-05-11",
+    "display_date": "11.May.2026",
+    "type": "Risk",
+    "text": "AI server revenue must be evaluated alongside gross margin, working capital, and cash conversion.",
+    "display_text": "11.May.2026 Risk: AI server revenue must be evaluated alongside gross margin, working capital, and cash conversion.",
+    "source_id": ""
+  },
+  {
+    "ticker": "MU",
+    "date": "2026-05-11",
+    "display_date": "11.May.2026",
+    "type": "Risk",
+    "text": "Memory and HBM upside must be balanced against cyclical supply response and valuation risk.",
+    "display_text": "11.May.2026 Risk: Memory and HBM upside must be balanced against cyclical supply response and valuation risk.",
+    "source_id": ""
+  },
+  {
+    "ticker": "VRT",
+    "date": "2026-05-11",
+    "display_date": "11.May.2026",
+    "type": "Catalyst",
+    "text": "Power and cooling are becoming core deployment-speed bottlenecks for AI data centers.",
+    "display_text": "11.May.2026 Catalyst: Power and cooling are becoming core deployment-speed bottlenecks for AI data centers.",
+    "source_id": ""
+  }
+]

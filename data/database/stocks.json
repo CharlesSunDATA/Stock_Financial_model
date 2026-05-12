@@ -1,0 +1,1311 @@
+{
+  "AAOI": {
+    "ticker": "AAOI",
+    "company": "Applied Optoelectronics",
+    "category": [
+      "Optical Communications / Photonics"
+    ],
+    "positioning": "AI infrastructure company tracked under Optical Communications / Photonics.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "AEHR": {
+    "ticker": "AEHR",
+    "company": "Aehr Test Systems",
+    "category": [
+      "Semiconductor Equipment / Packaging"
+    ],
+    "positioning": "AI infrastructure company tracked under Semiconductor Equipment / Packaging.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "ALAB": {
+    "ticker": "ALAB",
+    "company": "Astera Labs",
+    "category": [
+      "Connector / Interconnect"
+    ],
+    "positioning": "AI infrastructure company tracked under Connector / Interconnect.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "AMAT": {
+    "ticker": "AMAT",
+    "company": "Applied Materials",
+    "category": [
+      "Semiconductor Equipment / Packaging"
+    ],
+    "positioning": "AI infrastructure company tracked under Semiconductor Equipment / Packaging.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "AMD": {
+    "ticker": "AMD",
+    "company": "Advanced Micro Devices",
+    "category": [
+      "GPU / CPU / ASIC"
+    ],
+    "positioning": "AI infrastructure company tracked under GPU / CPU / ASIC.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "AMZN": {
+    "ticker": "AMZN",
+    "company": "Amazon",
+    "category": [
+      "Cloud Demand Drivers"
+    ],
+    "positioning": "AI infrastructure company tracked under Cloud Demand Drivers.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "ANET": {
+    "ticker": "ANET",
+    "company": "Arista Networks",
+    "category": [
+      "Networking"
+    ],
+    "positioning": "AI infrastructure company tracked under Networking.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "APH": {
+    "ticker": "APH",
+    "company": "Amphenol",
+    "category": [
+      "Connector / Interconnect"
+    ],
+    "positioning": "AI infrastructure company tracked under Connector / Interconnect.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "ASML": {
+    "ticker": "ASML",
+    "company": "ASML",
+    "category": [
+      "Semiconductor Equipment / Packaging"
+    ],
+    "positioning": "AI infrastructure company tracked under Semiconductor Equipment / Packaging.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "AVGO": {
+    "ticker": "AVGO",
+    "company": "Broadcom",
+    "category": [
+      "GPU / CPU / ASIC",
+      "Networking"
+    ],
+    "positioning": "AI infrastructure company tracked under GPU / CPU / ASIC, Networking.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "BE": {
+    "ticker": "BE",
+    "company": "Bloom Energy",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "CARR": {
+    "ticker": "CARR",
+    "company": "Carrier Global",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "CAT": {
+    "ticker": "CAT",
+    "company": "Caterpillar",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "CIEN": {
+    "ticker": "CIEN",
+    "company": "Ciena",
+    "category": [
+      "Optical Communications / Photonics",
+      "Networking"
+    ],
+    "positioning": "AI infrastructure company tracked under Optical Communications / Photonics, Networking.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "CLS": {
+    "ticker": "CLS",
+    "company": "Celestica",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI infrastructure company tracked under AI Server / ODM / EMS.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "CMI": {
+    "ticker": "CMI",
+    "company": "Cummins",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "COHR": {
+    "ticker": "COHR",
+    "company": "Coherent",
+    "category": [
+      "Optical Communications / Photonics"
+    ],
+    "positioning": "AI infrastructure company tracked under Optical Communications / Photonics.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "CRDO": {
+    "ticker": "CRDO",
+    "company": "Credo Technology",
+    "category": [
+      "Connector / Interconnect"
+    ],
+    "positioning": "AI infrastructure company tracked under Connector / Interconnect.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "CSCO": {
+    "ticker": "CSCO",
+    "company": "Cisco",
+    "category": [
+      "Networking"
+    ],
+    "positioning": "AI infrastructure company tracked under Networking.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "DELL": {
+    "ticker": "DELL",
+    "company": "Dell Technologies",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI server and enterprise AI factory systems supplier.",
+    "investment_thesis": "The key question is whether AI-optimized server orders and backlog convert into high-quality revenue with improving margins and cash conversion.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [
+      "AI server backlog conversion.",
+      "NVIDIA Blackwell/Rubin rack-scale deployments.",
+      "Enterprise AI factory adoption."
+    ],
+    "risks": [
+      "AI server gross margins may lag traditional server margins.",
+      "Dependency on GPU, HBM, and high-end component supply.",
+      "Large-customer concentration can create quarterly volatility."
+    ],
+    "tracking_items": [
+      "AI-optimized server orders, shipments, and backlog.",
+      "ISG revenue growth and operating margin.",
+      "Working capital and cash conversion."
+    ],
+    "earnings_notes": [
+      "FY2026 AI-optimized server orders exceeded $64B.",
+      "FY2027 AI-optimized server revenue guidance was about $50B."
+    ],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "EME": {
+    "ticker": "EME",
+    "company": "EMCOR",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "ETN": {
+    "ticker": "ETN",
+    "company": "Eaton",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "FIX": {
+    "ticker": "FIX",
+    "company": "Comfort Systems USA",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "FLEX": {
+    "ticker": "FLEX",
+    "company": "Flex",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI infrastructure company tracked under AI Server / ODM / EMS.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "FN": {
+    "ticker": "FN",
+    "company": "Fabrinet",
+    "category": [
+      "Optical Communications / Photonics"
+    ],
+    "positioning": "AI infrastructure company tracked under Optical Communications / Photonics.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "GEV": {
+    "ticker": "GEV",
+    "company": "GE Vernova",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "GLW": {
+    "ticker": "GLW",
+    "company": "Corning",
+    "category": [
+      "Optical Communications / Photonics"
+    ],
+    "positioning": "Optical fiber and connectivity supplier for AI data center scale-out.",
+    "investment_thesis": "Optical connectivity can become a bottleneck as AI clusters and data center interconnect demand rises.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [
+      "AI data center optical fiber and connectivity demand.",
+      "Potential customer partnerships around high-bandwidth optical infrastructure."
+    ],
+    "risks": [
+      "Telecom and enterprise demand cycles can dilute AI-driven growth.",
+      "Pricing and mix matter if optical demand rises without margin expansion."
+    ],
+    "tracking_items": [
+      "Optical communications revenue.",
+      "AI data center customer commentary.",
+      "Margin contribution from optical connectivity products."
+    ],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "GNRC": {
+    "ticker": "GNRC",
+    "company": "Generac",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "GOOGL": {
+    "ticker": "GOOGL",
+    "company": "Alphabet",
+    "category": [
+      "Cloud Demand Drivers"
+    ],
+    "positioning": "AI infrastructure company tracked under Cloud Demand Drivers.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "HNHPF": {
+    "ticker": "HNHPF",
+    "company": "Hon Hai Precision",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI infrastructure company tracked under AI Server / ODM / EMS.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "HPE": {
+    "ticker": "HPE",
+    "company": "Hewlett Packard Enterprise",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI infrastructure company tracked under AI Server / ODM / EMS.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "HXSCL": {
+    "ticker": "HXSCL",
+    "company": "SK Hynix",
+    "category": [
+      "Memory / HBM / Storage"
+    ],
+    "positioning": "AI infrastructure company tracked under Memory / HBM / Storage.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "INTC": {
+    "ticker": "INTC",
+    "company": "Intel",
+    "category": [
+      "GPU / CPU / ASIC"
+    ],
+    "positioning": "AI infrastructure company tracked under GPU / CPU / ASIC.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "JBL": {
+    "ticker": "JBL",
+    "company": "Jabil",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI infrastructure company tracked under AI Server / ODM / EMS.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "JCI": {
+    "ticker": "JCI",
+    "company": "Johnson Controls",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "KLAC": {
+    "ticker": "KLAC",
+    "company": "KLA",
+    "category": [
+      "Semiconductor Equipment / Packaging"
+    ],
+    "positioning": "AI infrastructure company tracked under Semiconductor Equipment / Packaging.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "LITE": {
+    "ticker": "LITE",
+    "company": "Lumentum",
+    "category": [
+      "Optical Communications / Photonics"
+    ],
+    "positioning": "Optical communications and laser component supplier for AI data center scaling.",
+    "investment_thesis": "As GPU clusters scale, high-speed optical modules, optical engines, lasers, CPO, and OCS become more important bottlenecks.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [
+      "800G, 1.6T, and future 3.2T optical upgrade cycles.",
+      "Cloud data center interconnect and AI cluster scale-out.",
+      "CPO, OCS, and high-speed laser design wins."
+    ],
+    "risks": [
+      "Competitive pricing pressure in optical components.",
+      "Customer concentration and order lumpiness.",
+      "Fast technology transitions can pressure product mix."
+    ],
+    "tracking_items": [
+      "Datacom and cloud revenue growth.",
+      "Gross margin and operating margin.",
+      "Backlog and customer commitments.",
+      "New product ramp in OCS, CPO, and high-speed lasers."
+    ],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "LRCX": {
+    "ticker": "LRCX",
+    "company": "Lam Research",
+    "category": [
+      "Semiconductor Equipment / Packaging"
+    ],
+    "positioning": "AI infrastructure company tracked under Semiconductor Equipment / Packaging.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "META": {
+    "ticker": "META",
+    "company": "Meta Platforms",
+    "category": [
+      "Cloud Demand Drivers"
+    ],
+    "positioning": "AI infrastructure company tracked under Cloud Demand Drivers.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "MRVL": {
+    "ticker": "MRVL",
+    "company": "Marvell Technology",
+    "category": [
+      "GPU / CPU / ASIC",
+      "Networking"
+    ],
+    "positioning": "AI infrastructure company tracked under GPU / CPU / ASIC, Networking.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "MSFT": {
+    "ticker": "MSFT",
+    "company": "Microsoft",
+    "category": [
+      "Cloud Demand Drivers"
+    ],
+    "positioning": "AI infrastructure company tracked under Cloud Demand Drivers.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "MU": {
+    "ticker": "MU",
+    "company": "Micron Technology",
+    "category": [
+      "Memory / HBM / Storage"
+    ],
+    "positioning": "AI data center memory and HBM beneficiary.",
+    "investment_thesis": "AI training and inference increase demand for HBM, server DRAM, and high-performance SSDs, shifting the memory cycle toward data-center-driven demand.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [
+      "Tight HBM supply and strong pricing.",
+      "Higher HBM attach rates on NVIDIA, AMD, and custom ASIC platforms.",
+      "Data center SSD and high-end DRAM demand."
+    ],
+    "risks": [
+      "Memory remains a cyclical industry.",
+      "HBM yield, qualification, and customer concentration risk.",
+      "High CapEx could pressure cash flow if demand slows."
+    ],
+    "tracking_items": [
+      "HBM sold-out commentary.",
+      "Cloud Memory and Core Data Center revenue growth.",
+      "Gross margin guidance.",
+      "CapEx and inventory."
+    ],
+    "earnings_notes": [
+      "FQ2 FY2026 Cloud Memory Business Unit revenue was $7.749B with 74% gross margin.",
+      "FQ3 FY2026 revenue guidance was $33.5B plus or minus $0.75B."
+    ],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "NOK": {
+    "ticker": "NOK",
+    "company": "Nokia",
+    "category": [
+      "Optical Communications / Photonics"
+    ],
+    "positioning": "AI infrastructure company tracked under Optical Communications / Photonics.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "NVDA": {
+    "ticker": "NVDA",
+    "company": "NVIDIA",
+    "category": [
+      "GPU / CPU / ASIC"
+    ],
+    "positioning": "Core AI data center platform company across GPUs, networking, rack-scale systems, and software.",
+    "investment_thesis": "NVIDIA remains the demand thermometer for AI factories, but the next phase depends on networking, HBM, packaging, power, and deployment velocity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [
+      "Blackwell shipments and the Vera Rubin product cycle.",
+      "Hyperscaler AI CapEx revisions.",
+      "Expansion in networking, NVLink, BlueField, AI storage, and rack-scale systems."
+    ],
+    "risks": [
+      "High expectations amplify any growth deceleration.",
+      "Export controls and geopolitical constraints.",
+      "Custom ASIC adoption could affect long-term GPU mix."
+    ],
+    "tracking_items": [
+      "Data center revenue growth.",
+      "Gross margin and Blackwell/Rubin product mix.",
+      "HBM and advanced packaging capacity.",
+      "CSP CapEx guidance."
+    ],
+    "earnings_notes": [
+      "Q4 FY2026 revenue was $68.127B, up 73% year over year.",
+      "Q4 FY2026 data center revenue was $62.3B, up 75% year over year.",
+      "FY2026 data center revenue was $193.7B, up 68% year over year."
+    ],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "NVT": {
+    "ticker": "NVT",
+    "company": "nVent Electric",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "ORCL": {
+    "ticker": "ORCL",
+    "company": "Oracle",
+    "category": [
+      "Cloud Demand Drivers"
+    ],
+    "positioning": "AI infrastructure company tracked under Cloud Demand Drivers.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "PWR": {
+    "ticker": "PWR",
+    "company": "Quanta Services",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "QUCCF": {
+    "ticker": "QUCCF",
+    "company": "Quanta Computer",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI infrastructure company tracked under AI Server / ODM / EMS.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "SMCI": {
+    "ticker": "SMCI",
+    "company": "Super Micro Computer",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI infrastructure company tracked under AI Server / ODM / EMS.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "SSNLF": {
+    "ticker": "SSNLF",
+    "company": "Samsung Electronics",
+    "category": [
+      "Memory / HBM / Storage"
+    ],
+    "positioning": "AI infrastructure company tracked under Memory / HBM / Storage.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "STX": {
+    "ticker": "STX",
+    "company": "Seagate",
+    "category": [
+      "Memory / HBM / Storage"
+    ],
+    "positioning": "AI infrastructure company tracked under Memory / HBM / Storage.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "TEL": {
+    "ticker": "TEL",
+    "company": "TE Connectivity",
+    "category": [
+      "Connector / Interconnect"
+    ],
+    "positioning": "AI infrastructure company tracked under Connector / Interconnect.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "TER": {
+    "ticker": "TER",
+    "company": "Teradyne",
+    "category": [
+      "Semiconductor Equipment / Packaging"
+    ],
+    "positioning": "AI infrastructure company tracked under Semiconductor Equipment / Packaging.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "TSM": {
+    "ticker": "TSM",
+    "company": "Taiwan Semiconductor Manufacturing",
+    "category": [
+      "GPU / CPU / ASIC"
+    ],
+    "positioning": "AI infrastructure company tracked under GPU / CPU / ASIC.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "TT": {
+    "ticker": "TT",
+    "company": "Trane Technologies",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "AI infrastructure company tracked under Power / Cooling / Data Center Equipment.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "VRT": {
+    "ticker": "VRT",
+    "company": "Vertiv",
+    "category": [
+      "Power / Cooling / Data Center Equipment"
+    ],
+    "positioning": "Critical AI data center power and thermal infrastructure supplier.",
+    "investment_thesis": "Higher AI rack power density makes power management, liquid cooling, thermal systems, UPS, modular deployment, and services key deployment bottlenecks.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [
+      "AI rack power density growth.",
+      "Liquid cooling, power train, and modular infrastructure orders.",
+      "Faster backlog-to-revenue conversion."
+    ],
+    "risks": [
+      "Supply-chain and field deployment delays.",
+      "Raw material, tariff, and labor cost pressure.",
+      "Data center CapEx slowdown or customer acceptance delays."
+    ],
+    "tracking_items": [
+      "Organic orders growth.",
+      "Backlog and book-to-bill.",
+      "Americas growth.",
+      "Adjusted operating margin.",
+      "Liquid cooling adoption."
+    ],
+    "earnings_notes": [
+      "Q1 2026 net sales were $2.65B, up 30%.",
+      "The company raised 2026 net sales guidance to $13.5B-$14.0B."
+    ],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "WDC": {
+    "ticker": "WDC",
+    "company": "Western Digital",
+    "category": [
+      "Memory / HBM / Storage"
+    ],
+    "positioning": "AI infrastructure company tracked under Memory / HBM / Storage.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  },
+  "WICOF": {
+    "ticker": "WICOF",
+    "company": "Wistron",
+    "category": [
+      "AI Server / ODM / EMS"
+    ],
+    "positioning": "AI infrastructure company tracked under AI Server / ODM / EMS.",
+    "investment_thesis": "Tracked as part of the AI data center supply chain where bottlenecks are moving beyond GPUs into memory, optical connectivity, servers, networking, power, cooling, and deployment capacity.",
+    "latest_change": "Initial research database seed.",
+    "weekly_catalyst": "Monitor AI infrastructure demand, order conversion, and margin quality.",
+    "weekly_risk": "Watch valuation, supply bottlenecks, customer concentration, and demand digestion risk.",
+    "benefit_reason": "Potential beneficiary of AI factory buildout and hyperscaler infrastructure spending.",
+    "pressure_reason": "May face cyclical demand, component constraints, pricing pressure, or execution risk.",
+    "next_watch": "Track earnings commentary, backlog, margin, CapEx, and customer demand signals.",
+    "catalysts": [],
+    "risks": [],
+    "tracking_items": [],
+    "earnings_notes": [],
+    "news_notes": [],
+    "last_updated": "2026-05-11"
+  }
+}

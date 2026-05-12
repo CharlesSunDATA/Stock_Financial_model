@@ -87,7 +87,15 @@ Optional secrets:
 ```text
 FRED_API_KEY
 ALPHA_VANTAGE_API_KEY
+TAVILY_API_KEY
 RCLONE_CONFIG_GDRIVE
+```
+
+Daily AI data center briefs use `FMP_API_KEY` and optional `TAVILY_API_KEY`, then upload the report and internal source trace to Google Drive under:
+
+```text
+gdrive:Codex/research/output/daily
+gdrive:Codex/research/data/daily_sources
 ```
 
 Each package contains:
