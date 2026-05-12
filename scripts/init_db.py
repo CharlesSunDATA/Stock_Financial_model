@@ -960,6 +960,74 @@ def init_db(db_path: Path | None = None) -> Path:
             """
         )
 
+        # ── Confirmed data-center equipment orders ──────────────────────────
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS data_center_orders (
+              order_id TEXT PRIMARY KEY,
+              ticker TEXT NOT NULL,
+              company TEXT,
+              equipment_group TEXT,
+              customer TEXT,
+              order_type TEXT,
+              order_value REAL,
+              currency TEXT DEFAULT 'USD',
+              contract_duration TEXT,
+              announcement_date TEXT NOT NULL,
+              source_type TEXT,
+              source_title TEXT,
+              source_url TEXT,
+              evidence_text TEXT,
+              confidence_score REAL,
+              status TEXT DEFAULT 'Confirmed',
+              revenue_conversion_note TEXT,
+              updated_at TEXT NOT NULL
+            );
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_data_center_orders_ticker_date
+            ON data_center_orders(ticker, announcement_date);
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_data_center_orders_group_date
+            ON data_center_orders(equipment_group, announcement_date);
+            """
+        )
+
+        # ── FRED macro time-series ───────────────────────────────────────────
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS fred_series (
+              series_id   TEXT NOT NULL,
+              series_date TEXT NOT NULL,
+              value       REAL,
+              updated_at  TEXT NOT NULL,
+              UNIQUE(series_id, series_date)
+            );
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_fred_series_id_date
+            ON fred_series(series_id, series_date);
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS fred_series_meta (
+              series_id    TEXT PRIMARY KEY,
+              title        TEXT,
+              units        TEXT,
+              frequency    TEXT,
+              last_fetched TEXT
+            );
+            """
+        )
+
         conn.commit()
 
     return db_path
