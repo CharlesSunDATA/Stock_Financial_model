@@ -86,6 +86,7 @@ Optional secrets:
 
 ```text
 FRED_API_KEY
+ALPHA_VANTAGE_API_KEY
 RCLONE_CONFIG_GDRIVE
 ```
 
